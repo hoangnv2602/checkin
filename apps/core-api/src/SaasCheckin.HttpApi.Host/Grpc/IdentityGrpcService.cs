@@ -13,11 +13,14 @@ namespace SaasCheckin.HttpApi.Host.Grpc;
 /// <c>x-tenant-id</c> — middleware <c>CurrentTenantMiddleware</c> (filter)
 /// set <c>ICurrentTenant</c> trước khi handler chạy.
 ///
-/// Phase 1: dùng raw message types (POCOs) thay vì proto-generated. Sau khi
-/// <c>buf generate</c> chạy, sẽ thay bằng generated types (Phase 1+2 task).
+/// Phase 1: dùng raw message types (POCOs) thay vì proto-generated. Class
+/// cung cấp <see cref="BindService"/> (Phase 1+2 sẽ là generated abstract base).
+/// grpc-dnet's MapGrpcService&lt;T&gt; reflect lên T.BindService() instance method.
 /// </summary>
 public sealed class IdentityGrpcService
 {
+    private const string ServiceName = "saascheckin.identity.v1.IdentityService";
+
     private readonly IMediator _mediator;
     private readonly ICurrentTenant _currentTenant;
     private readonly ILogger<IdentityGrpcService> _logger;
@@ -31,6 +34,51 @@ public sealed class IdentityGrpcService
         _currentTenant = currentTenant;
         _logger = logger;
     }
+
+    /// <summary>
+    /// grpc-dnet's MapGrpcService&lt;T&gt; reflect lên instance method `BindService()`
+    /// returning <see cref="ServerServiceDefinition"/>. We bind từng method tới `this` instance
+    /// methods, dùng identity-marshallers (raw JSON bytes — Phase 1 không có proto descriptor).
+    /// </summary>
+    public ServerServiceDefinition BindService()
+    {
+        var b = ServerServiceDefinition.CreateBuilder();
+
+        b.AddMethod(
+            BuildMethod<SignInUserRequest, SignInUserResponse>("SignInUser"),
+            (request, ctx) => SignInUser(request, ctx));
+
+        b.AddMethod(
+            BuildMethod<RefreshUserRequest, RefreshUserResponse>("RefreshUser"),
+            (request, ctx) => RefreshUser(request, ctx));
+
+        b.AddMethod(
+            BuildMethod<LogoutUserRequest, LogoutUserResponse>("LogoutUser"),
+            (request, ctx) => LogoutUser(request, ctx));
+
+        b.AddMethod(
+            BuildMethod<RegisterUserRequest, RegisterUserResponse>("RegisterUser"),
+            (request, ctx) => RegisterUser(request, ctx));
+
+        b.AddMethod(
+            BuildMethod<GetUserRequest, GetUserResponse>("GetUser"),
+            (request, ctx) => GetUser(request, ctx));
+
+        return b.Build();
+    }
+
+    private static Method<TRequest, TResponse> BuildMethod<TRequest, TResponse>(string name)
+        where TRequest : class where TResponse : class
+        => new(
+            MethodType.Unary, ServiceName, name,
+            CreateMarshaller<TRequest>(),
+            CreateMarshaller<TResponse>());
+
+    private static Marshaller<T> CreateMarshaller<T>() where T : class
+        => Marshallers.Create(
+            (T value) => System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(value),
+            (byte[] data) => System.Text.Json.JsonSerializer.Deserialize<T>(data)
+                ?? throw new InvalidOperationException("Cannot deserialize gRPC payload"));
 
     public async Task<SignInUserResponse> SignInUser(
         SignInUserRequest request,

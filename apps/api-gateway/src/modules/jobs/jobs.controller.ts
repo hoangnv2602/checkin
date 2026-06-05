@@ -1,5 +1,6 @@
 import { Controller, Get } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
+import { Public } from "../../common/decorators/public.decorator";
 
 /**
  * JobsController — Phase 0 stub.
@@ -8,6 +9,7 @@ import { ApiTags } from "@nestjs/swagger";
 @ApiTags("jobs")
 @Controller("jobs")
 export class JobsController {
+  @Public()
   @Get()
   ping() {
     return { module: "jobs", status: "stub", phase: 0 };

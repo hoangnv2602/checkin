@@ -68,9 +68,11 @@ public sealed class UserRepository : IUserRepository
     private static User MapToDomain(Identity.UserEntityConfiguration.UserEntity e)
     {
         // Domain re-constitute — dùng reflection cho private ctor
+        // Lọc đúng ctor có 5 tham số (UserId, Email, FullName, passwordHash, IClock).
+        // Tránh pick nhầm parameterless ctor `private User() : base(default!)`.
         var ctor = typeof(User).GetConstructors(
             System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
-            .First();
+            .First(c => c.GetParameters().Length == 5);
 #pragma warning disable CS8601 // Possible null reference assignment.
         var user = (User)ctor.Invoke(new object[]
         {
@@ -161,9 +163,10 @@ public sealed class OrganizationRepository : IOrganizationRepository
 
     private static Organization MapToDomain(Identity.OrganizationEntityConfiguration.OrganizationEntity e)
     {
+        // 7 tham số: OrganizationId, Name, OrgSlug, locale, currency, timezone, IClock
         var ctor = typeof(Organization).GetConstructors(
             System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
-            .First();
+            .First(c => c.GetParameters().Length == 7);
         var org = (Organization)ctor.Invoke(new object?[]
         {
             OrganizationId.From(e.Id),
@@ -252,9 +255,10 @@ public sealed class MembershipRepository : IMembershipRepository
 
     private static Membership MapToDomain(Identity.MembershipEntityConfiguration.MembershipEntity e)
     {
+        // 5 tham số: MembershipId, UserId, OrganizationId, Role, invitedAt
         var ctor = typeof(Membership).GetConstructors(
             System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
-            .First();
+            .First(c => c.GetParameters().Length == 5);
         var m = (Membership)ctor.Invoke(new object?[]
         {
             MembershipId.From(e.Id),

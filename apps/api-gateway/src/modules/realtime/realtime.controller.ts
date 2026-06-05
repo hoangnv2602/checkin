@@ -1,5 +1,6 @@
 import { Controller, Get } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
+import { Public } from "../../common/decorators/public.decorator";
 
 /**
  * RealtimeController — Phase 0 stub.
@@ -8,6 +9,7 @@ import { ApiTags } from "@nestjs/swagger";
 @ApiTags("realtime")
 @Controller("realtime")
 export class RealtimeController {
+  @Public()
   @Get()
   ping() {
     return { module: "realtime", status: "stub", phase: 0 };

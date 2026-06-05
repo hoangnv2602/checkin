@@ -2,22 +2,27 @@
  * apps/api-gateway/src/main.ts — bootstrap NestJS BFF.
  *
  * Phase 0: boot HTTP server + Socket.IO gateway + Swagger UI.
- * Phase 1+ thêm: gRPC client tới core-api, JWT auth guard, BullMQ workers.
+ * Phase 1+: gRPC client, JWT auth guard (global), BullMQ workers, cookie-parser.
  */
 import { NestFactory } from "@nestjs/core";
 import { Logger } from "nestjs-pino";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import cookieParser from "cookie-parser";
 import { AppModule } from "./app.module";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   app.useLogger(app.get(Logger));
 
+  // Parse cookies (Phase 1: sa_access_token, sa_refresh_token cho web/mobile)
+  app.use(cookieParser());
+
   // OpenAPI 3.1 auto-gen (D8)
   const config = new DocumentBuilder()
     .setTitle("SaaS Check-in API Gateway")
     .setVersion("0.0.0")
     .addBearerAuth()
+    .addCookieAuth("sa_access_token")
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("v1/docs", app, document);

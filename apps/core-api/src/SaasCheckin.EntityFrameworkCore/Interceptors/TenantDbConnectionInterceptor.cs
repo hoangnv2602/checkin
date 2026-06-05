@@ -28,15 +28,14 @@ public sealed class TenantDbConnectionInterceptor : DbConnectionInterceptor
         _logger = logger;
     }
 
-    public override async ValueTask<InterceptionResult> ConnectionOpeningAsync(
+    public override async Task ConnectionOpenedAsync(
         DbConnection connection,
-        ConnectionEventData eventData,
-        InterceptionResult result,
+        ConnectionEndEventData eventData,
         CancellationToken cancellationToken = default)
     {
-        var baseResult = await base.ConnectionOpeningAsync(connection, eventData, result, cancellationToken);
+        await base.ConnectionOpenedAsync(connection, eventData, cancellationToken);
+        // Set sau khi connection open xong (ConnectionOpeningAsync chạy trước khi mở).
         await SetTenantSessionVarAsync(connection, cancellationToken);
-        return baseResult;
     }
 
     private async Task SetTenantSessionVarAsync(DbConnection connection, CancellationToken ct)

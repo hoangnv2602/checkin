@@ -267,9 +267,10 @@ public sealed class JwtTokenService : IJwtTokenService
             KeyId = Guid.NewGuid().ToString("N"),
             PrivateKey = rsa,
             PublicKey = rsa,
-            // PEM serialize để cache lại Redis (RSACryptoServiceProvider không serializable)
+            // ExportSubjectPublicKeyInfoPem (X.509 SPKI) — tương thích với jose's
+            // importSPKI(). ExportRSAPublicKeyPem() returns PKCS#1 which jose rejects.
             PrivatePem = rsa.ExportRSAPrivateKeyPem(),
-            PublicPem = rsa.ExportRSAPublicKeyPem(),
+            PublicPem = rsa.ExportSubjectPublicKeyInfoPem(),
             CreatedAt = _clock.UtcNow,
         };
 
@@ -296,13 +297,22 @@ public sealed class JwtTokenService : IJwtTokenService
 
     private sealed class SigningKeyMaterial
     {
+        [System.Text.Json.Serialization.JsonPropertyName("keyId")]
         public string KeyId { get; set; } = string.Empty;
+
         [System.Text.Json.Serialization.JsonIgnore]
         public RSA? PrivateKey { get; set; }
+
         [System.Text.Json.Serialization.JsonIgnore]
         public RSA? PublicKey { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("privatePem")]
         public string PrivatePem { get; set; } = string.Empty;
+
+        [System.Text.Json.Serialization.JsonPropertyName("publicPem")]
         public string PublicPem { get; set; } = string.Empty;
+
+        [System.Text.Json.Serialization.JsonPropertyName("createdAt")]
         public DateTimeOffset CreatedAt { get; set; }
     }
 }

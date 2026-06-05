@@ -92,8 +92,10 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
 // CurrentTenantMiddleware (chạy sớm — set ICurrentTenant trước EF)
 app.UseMiddleware<SaasCheckin.HttpApi.Host.Middleware.CurrentTenantMiddleware>();
 
-// gRPC service
-app.MapGrpcService<IdentityGrpcService>();
+// REST controllers (Phase 1 BFF → core-api goes via REST, not gRPC — see I-102 plan note)
+// gRPC service registration is on hold until `buf generate` chạy (I-105) — Phase 1
+// raw POCO binding với grpc-dnet yêu cầu generated abstract base với static `Service`
+// field mà ta chưa có.
 
 // REST controllers
 app.MapControllers();
