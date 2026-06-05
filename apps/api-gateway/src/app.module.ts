@@ -9,12 +9,10 @@ import { CoreApiModule } from "./modules/core-api/core-api.module";
 
 @Module({
   imports: [
-    // Pino logger
+    // Pino logger — JSON output, no transport (pino-pretty not in deps)
     LoggerModule.forRoot({
       pinoHttp: {
-        transport: process.env.NODE_ENV === "production"
-          ? undefined
-          : { target: "pino-pretty", options: { colorize: true } },
+        level: process.env.LOG_LEVEL ?? "info",
         redact: ["req.headers.authorization", "req.headers.cookie"],
       },
     }),

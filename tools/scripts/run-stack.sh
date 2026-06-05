@@ -17,17 +17,6 @@ PIDS=()
 LOGS_DIR="$REPO_ROOT/.local/logs"
 mkdir -p "$LOGS_DIR"
 
-cleanup() {
-  echo
-  echo "── Cleanup ──"
-  for pid in "${PIDS[@]}"; do
-    kill "$pid" 2>/dev/null || true
-  done
-  wait 2>/dev/null || true
-  echo "  Stopped ${#PIDS[@]} services"
-}
-trap cleanup EXIT
-
 if [ "${1:-}" = "--stop" ]; then
   echo "── Stopping any running services ──"
   pkill -f "node.*next.*--port 3000" 2>/dev/null || true
@@ -38,6 +27,17 @@ if [ "${1:-}" = "--stop" ]; then
   echo "  Done."
   exit 0
 fi
+
+cleanup() {
+  echo
+  echo "── Cleanup ──"
+  for pid in "${PIDS[@]}"; do
+    kill "$pid" 2>/dev/null || true
+  done
+  wait 2>/dev/null || true
+  echo "  Stopped ${#PIDS[@]} services"
+}
+trap cleanup EXIT
 
 echo "═══ Phase C — Run full stack + verify ═══"
 echo
@@ -66,8 +66,8 @@ echo
 
 # 3. Start apps (local — không qua Docker để verify build nhanh hơn)
 echo "── 3. Start 4 services (local) ──"
-echo "  → apps/core-api (.NET) on :5000"
-ASPNETCORE_URLS=http://0.0.0.0:5000 \
+echo "  → apps/core-api (.NET) on :5050"
+ASPNETCORE_URLS=http://0.0.0.0:5050 \
   dotnet apps/core-api/src/SaasCheckin.HttpApi.Host/bin/Release/net10.0/SaasCheckin.HttpApi.Host.dll \
   > "$LOGS_DIR/core-api.log" 2>&1 &
 PIDS+=($!)
@@ -76,31 +76,51 @@ echo "  → apps/api-gateway (NestJS) on :3001"
 node apps/api-gateway/dist/main.js > "$LOGS_DIR/api-gateway.log" 2>&1 &
 PIDS+=($!)
 
-echo "  → apps/web (Next.js) on :3000"
-PORT=3000 node apps/web/server.js > "$LOGS_DIR/web.log" 2>&1 &
+echo "  → apps/web (Next.js standalone) on :3000"
+PORT=3000 HOSTNAME=0.0.0.0 \
+  node apps/web/.next/standalone/apps/web/server.js > "$LOGS_DIR/web.log" 2>&1 &
 PIDS+=($!)
 
-echo "  → apps/checkin-admin (Next.js) on :3002"
-PORT=3002 node apps/checkin-admin/server.js > "$LOGS_DIR/checkin-admin.log" 2>&1 &
+echo "  → apps/checkin-admin (Next.js standalone) on :3002"
+PORT=3002 HOSTNAME=0.0.0.0 \
+  node apps/checkin-admin/.next/standalone/apps/checkin-admin/server.js > "$LOGS_DIR/checkin-admin.log" 2>&1 &
 PIDS+=($!)
 echo
 
 # Wait for all to be ready
 echo "── 4. Wait for services ready ──"
-sleep 8
+READY_URLS=(
+  "http://localhost:5050/health/live"
+  "http://localhost:3001/health/live"
+  "http://localhost:3000/api/health"
+  "http://localhost:3002/api/health"
+)
+for i in {1..25}; do
+  ready=0
+  for url in "${READY_URLS[@]}"; do
+    code=$(curl -fsS -o /dev/null -w "%{http_code}" --max-time 1 "$url" 2>/dev/null || echo "000")
+    [ "$code" = "200" ] && ready=$((ready+1))
+  done
+  if [ "$ready" -eq 4 ]; then
+    echo "  ✓ all 4 services ready in ${i}s"
+    break
+  fi
+  sleep 1
+done
 echo
 
 # 5. Verify health
 echo "── 5. Health checks ──"
 HEALTH=0
-for url in \
-  "http://localhost:5000/health/live:core-api" \
-  "http://localhost:3001/health/live:api-gateway" \
-  "http://localhost:3000/api/health:web" \
-  "http://localhost:3002/api/health:checkin-admin"; do
-  endpoint="${url%%:*}"
-  name="${url##*:}"
-  http_code=$(curl -fsS -o /dev/null -w "%{http_code}" "$endpoint" 2>/dev/null || echo "000")
+# name|endpoint pairs — pipe separator avoids http:// :// collision
+for pair in \
+  "core-api|http://localhost:5050/health/live" \
+  "api-gateway|http://localhost:3001/health/live" \
+  "web|http://localhost:3000/api/health" \
+  "checkin-admin|http://localhost:3002/api/health"; do
+  name="${pair%%|*}"
+  endpoint="${pair##*|}"
+  http_code=$(curl -fsS -o /dev/null -w "%{http_code}" --max-time 2 "$endpoint" 2>/dev/null || echo "000")
   if [ "$http_code" = "200" ]; then
     echo "  ✓ $name → HTTP $http_code"
     HEALTH=$((HEALTH+1))
@@ -121,7 +141,7 @@ if [ "$HEALTH" -eq 4 ]; then
   echo "  Test in browser:"
   echo "    http://localhost:3000     — apps/web"
   echo "    http://localhost:3002     — apps/checkin-admin"
-  echo "    http://localhost:5000/scalar/v1 — apps/core-api OpenAPI UI"
+  echo "    http://localhost:5050/scalar/v1 — apps/core-api OpenAPI UI"
   echo "    http://localhost:3001/v1/docs  — apps/api-gateway Swagger"
   echo
   echo "  Press Ctrl+C to stop all services"
