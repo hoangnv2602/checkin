@@ -5,6 +5,7 @@ using SaasCheckin.Domain.Identity.Aggregates;
 using SaasCheckin.Domain.Identity.Events;
 using SaasCheckin.Domain.Identity.ValueObjects;
 using SaasCheckin.Shared.Domain.Core;
+using SaasCheckin.Utility;
 using Xunit;
 
 namespace SaasCheckin.Domain.Identity.Tests;

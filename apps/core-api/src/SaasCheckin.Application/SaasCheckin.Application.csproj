@@ -3,6 +3,7 @@
     <RootNamespace>SaasCheckin.Application</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="MediatR" />
     <ProjectReference Include="..\..\shared\Shared.Application\Shared.Application.csproj" />
     <ProjectReference Include="..\SaasCheckin.Application.Contracts\SaasCheckin.Application.Contracts.csproj" />
   </ItemGroup>

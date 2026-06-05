@@ -17,6 +17,13 @@
     <AnalysisMode>Recommended</AnalysisMode>
     <!-- CA1716: "Shared" namespace conflicts with reserved keyword — namespace intentional -->
     <!-- CA1305: IFormatProvider — Serilog Console() sink default is fine for Phase 0 -->
-    <NoWarn>$(NoWarn);CA1716;CA1305</NoWarn>
+    <!-- CA1848: LoggerMessage delegates — Phase 1 use simple LogInformation; optimize Phase 6+ -->
+    <!-- CA1873: log arg evaluation — keep simple, suppress for Phase 1 -->
+    <!-- CA1826: use collection indexer directly — keep code style, suppress -->
+    <!-- CA1822: mark static — keep API, suppress -->
+    <!-- CA1711: type names should not end in 'Permission' — IRequirePermission is intentional -->
+    <!-- CA1725: param name 'ct' vs 'cancellationToken' — keep 'ct' brevity -->
+    <!-- CA1707: test method names with underscores — convention for BDD-style test naming -->
+    <NoWarn>$(NoWarn);CA1716;CA1305;CA1848;CA1873;CA1826;CA1822;CA1711;CA1725;CA1707</NoWarn>
   </PropertyGroup>
 </Project>

@@ -12,8 +12,7 @@ public sealed record Email
 {
     // RFC 5322 simplified — không cover mọi edge case nhưng đủ cho SaaS B2B.
     private static readonly Regex EmailRegex = new(
-        @"^(?!\.)(""([^""\r\\]|\\[""\r\\])*""|([-a-zA-Z0-9!#$%&'*+/=?^_`{|}~]|(?<!\.)\.)+)" +
-        @")@[a-zA-Z0-9][a-zA-Z0-9-]{0,62}(\.[a-zA-Z0-9][a-zA-Z0-9-]{0,62})+$",
+        @"^[a-zA-Z0-9](?:[a-zA-Z0-9._%+-]{0,62}[a-zA-Z0-9])?@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
     public string Value { get; }

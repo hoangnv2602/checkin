@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-using SaasCheckin.Shared.EntityFrameworkCore.Interceptors;
 
 namespace SaasCheckin.Shared.EntityFrameworkCore;
 

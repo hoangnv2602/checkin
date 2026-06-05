@@ -14,6 +14,15 @@ public static class Guard
         return value;
     }
 
+    /// <summary>Struct variant — check default (Guid.Empty, 0, etc.).</summary>
+    public static T NotNullStruct<T>(T value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
+        where T : struct
+    {
+        if (value.Equals(default(T)))
+            throw new ArgumentException($"{paramName} không được default.", paramName);
+        return value;
+    }
+
     public static string NotNullOrEmpty(string? value, [CallerArgumentExpression(nameof(value))] string? paramName = null)
     {
         if (string.IsNullOrEmpty(value))

@@ -10,5 +10,6 @@
     <PackageReference Include="FluentAssertions" />
     <PackageReference Include="Moq" />
     <ProjectReference Include="..\..\src\SaasCheckin.Domain\SaasCheckin.Domain.csproj" />
+    <ProjectReference Include="..\..\shared\Utility\Utility.csproj" />
   </ItemGroup>
 </Project>

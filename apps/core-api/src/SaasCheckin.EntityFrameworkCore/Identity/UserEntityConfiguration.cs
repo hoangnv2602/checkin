@@ -22,6 +22,7 @@ public static class UserEntityConfiguration
         public string? Locale { get; set; }
         public DateTimeOffset? LastLoginAt { get; set; }
         public DateTimeOffset? LockedUntil { get; set; }
+        public int FailedLoginCount { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset UpdatedAt { get; set; }
     }
@@ -40,6 +41,7 @@ public static class UserEntityConfiguration
         b.Property(x => x.Locale).HasColumnName("locale").HasMaxLength(10);
         b.Property(x => x.LastLoginAt).HasColumnName("last_login_at");
         b.Property(x => x.LockedUntil).HasColumnName("locked_until");
+        b.Property(x => x.FailedLoginCount).HasColumnName("failed_login_count").IsRequired();
         b.Property(x => x.CreatedAt).HasColumnName("created_at");
         b.Property(x => x.UpdatedAt).HasColumnName("updated_at");
     }

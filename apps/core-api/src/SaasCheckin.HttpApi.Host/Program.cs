@@ -1,7 +1,14 @@
+using MediatR;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.EntityFrameworkCore;
+using SaasCheckin.Application.Common.Behaviors;
+using SaasCheckin.Domain.Identity;
+using SaasCheckin.HttpApi.Host.Grpc;
+using SaasCheckin.Infrastructure.Extensions;
+using SaasCheckin.Shared.Application.Extensions;
 using Scalar.AspNetCore;
-using SaasCheckin.EntityFrameworkCore;
 using Serilog;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,8 +21,43 @@ builder.Host.UseSerilog((ctx, lc) => lc
 // OpenAPI (D8)
 builder.Services.AddOpenApi();
 
-// gRPC (kết nối Phase 0 stub, real impl Phase 4)
+// gRPC
 builder.Services.AddGrpc();
+
+// Redis (JWT signing key cache + refresh tokens)
+var redisConn = builder.Configuration.GetConnectionString("Redis");
+if (!string.IsNullOrEmpty(redisConn))
+{
+    builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
+        ConnectionMultiplexer.Connect(redisConn));
+}
+
+// DbContext + Identity repositories + RLS interceptor
+builder.Services.AddSaasCheckinDbContext(builder.Configuration);
+
+// Identity bounded-context module (BCrypt + JWT signing)
+builder.Services.AddBoundedContextModule<IdentityModule>(builder.Configuration);
+
+// Application services (ICurrentTenant, IPermissionChecker, IIntegrationEventBus)
+builder.Services.AddSaasCheckinApplication();
+
+// MediatR — scan both Application (handlers) + Domain (domain event handlers).
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssemblies(
+        typeof(SaasCheckin.Domain.Identity.IdentityModule).Assembly,
+        typeof(SaasCheckin.Application.Identity.Commands.RegisterUserCommand).Assembly);
+    cfg.AddOpenBehavior(typeof(PermissionBehavior<,>));
+    cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
+});
+
+// Controllers (REST endpoints — Phase 1 mirror gRPC for BFF/Playwright tests)
+builder.Services.AddControllers();
+
+// JWT bearer (for REST controllers / future SignalR) — gRPC uses metadata
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer();
+builder.Services.AddAuthorization();
 
 // Health checks (K8s convention)
 builder.Services.AddHealthChecks()
@@ -46,6 +88,15 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
 {
     Predicate = check => check.Tags.Contains("ready"),
 });
+
+// CurrentTenantMiddleware (chạy sớm — set ICurrentTenant trước EF)
+app.UseMiddleware<SaasCheckin.HttpApi.Host.Middleware.CurrentTenantMiddleware>();
+
+// gRPC service
+app.MapGrpcService<IdentityGrpcService>();
+
+// REST controllers
+app.MapControllers();
 
 app.MapGet("/", () => Results.Redirect("/scalar/v1"));
 

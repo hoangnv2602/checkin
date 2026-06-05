@@ -3,6 +3,9 @@
     <RootNamespace>SaasCheckin.Shared.Application</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="MediatR" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
     <ProjectReference Include="..\Shared.Application.Contracts\Shared.Application.Contracts.csproj" />
   </ItemGroup>
 </Project>
