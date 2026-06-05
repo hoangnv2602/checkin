@@ -1,12 +1,15 @@
-export default function MfaSetupPage() {
+import { AdminMfaSetupForm } from "@/modules/auth/components/AdminMfaSetupForm";
+
+/**
+ * /mfa-setup — Phase 1 (I-108)
+ * Hiện QR + TOTP input, kích hoạt MFA.
+ */
+export default function AdminMfaSetupPage() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background text-foreground">
-      <div className="w-full max-w-md rounded-lg border border-border bg-card p-6 text-card-foreground">
-        <h1 className="text-2xl font-bold">MFA Setup</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          TOTP QR code + verify flow — Phase 1.
-        </p>
+    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
+      <div className="w-full max-w-md bg-card border border-border rounded-lg shadow-sm p-8">
+        <AdminMfaSetupForm />
       </div>
-    </main>
+    </div>
   );
 }
