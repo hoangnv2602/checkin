@@ -1,0 +1,6 @@
+---
+# playbooks/staging.yml — full staging stack: common + db + app.
+# `ansible-playbook playbooks/staging.yml -i inventories/staging/hosts.yml`
+- import_playbook: common.yml
+- import_playbook: db.yml
+- import_playbook: app.yml

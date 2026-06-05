@@ -1,0 +1,48 @@
+# .github/dependabot.yml — I-007
+# Auto PR cho npm, nuget, pub, github-actions. Auto-merge minor/patch.
+
+version: 2
+
+updates:
+  # TypeScript packages (apps/web, checkin-admin, api-gateway, packages/*)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    groups:
+      # Group tất cả minor + patch thành 1 PR (dễ review)
+      minor-and-patch:
+        applies-to: version-updates
+        update-types:
+          - "minor"
+          - "patch"
+    # Auto-merge minor/patch (cần GH setting: Allow auto-merge ON)
+    # Phase 0: skip auto-merge cho major, chỉ auto-merge minor/patch khi CI pass.
+    labels:
+      - "dependencies"
+      - "auto-merge-candidate"
+
+  # .NET (apps/core-api)
+  - package-ecosystem: "nuget"
+    directory: "/apps/core-api"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels: ["dependencies"]
+
+  # Flutter (apps/mobile + packages/dart-core)
+  - package-ecosystem: "pub"
+    directory: "/apps/mobile"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels: ["dependencies"]
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels: ["dependencies", "ci"]

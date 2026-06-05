@@ -1,0 +1,20 @@
+# CODEOWNERS — I-002
+# Default owner toàn repo. Mỗi sub-area có owner riêng override default.
+
+*                                           @hoangnv2602
+
+# Platform owner app (D12, ADR-0014) — tách biệt audience
+/apps/checkin-admin/                        @hoangnv2602
+/packages/proto/checkin/                    @hoangnv2602
+/packages/proto/platform-ops/               @hoangnv2602
+
+# Core domain (.NET) — cần review kỹ hơn
+/apps/core-api/                             @hoangnv2602
+/docs/adr/                                  @hoangnv2602
+
+# Infra (Hetzner/Ansible) — sensitive
+/infra/ansible/                             @hoangnv2602
+/infra/github-actions/                      @hoangnv2602
+
+# Docs (ít rủi ro, default owner)
+/docs/                                      @hoangnv2602

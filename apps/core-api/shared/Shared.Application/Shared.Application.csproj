@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>SaasCheckin.Shared.Application</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Shared.Application.Contracts\Shared.Application.Contracts.csproj" />
+  </ItemGroup>
+</Project>

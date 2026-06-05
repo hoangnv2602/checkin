@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>SaasCheckin.ArchitectureTests</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="NetArchTest" />
+    <ProjectReference Include="..\..\src\SaasCheckin.Domain\SaasCheckin.Domain.csproj" />
+    <ProjectReference Include="..\..\src\SaasCheckin.Application\SaasCheckin.Application.csproj" />
+    <ProjectReference Include="..\..\src\SaasCheckin.EntityFrameworkCore\SaasCheckin.EntityFrameworkCore.csproj" />
+  </ItemGroup>
+</Project>

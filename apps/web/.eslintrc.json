@@ -1,0 +1,16 @@
+{
+  "extends": ["next/core-web-vitals", "next/typescript"],
+  "rules": {
+    "no-restricted-imports": [
+      "error",
+      {
+        "patterns": [
+          {
+            "group": ["@/modules/*/components/*", "!@/modules/*/components/index"],
+            "message": "Import qua barrel '@/modules/<module>' thay vì deep import."
+          }
+        ]
+      }
+    ]
+  }
+}

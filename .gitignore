@@ -1,21 +1,91 @@
-# ── Phase 0 baseline .gitignore (I-001 sẽ mở rộng) ───────────────────────
-# Session 2026-06-05: chỉ ignore những thứ chắc chắn không commit.
-# Phase 0 chưa có code (docs only), nên danh sách này còn rỗng —
-# sẽ được mở rộng khi I-001 init monorepo (Node/.NET/Flutter/Docker).
+# ── Root .gitignore — full monorepo (I-001, I-002) ────────────────────────
 
-# Secrets (chưa có file nào nhưng rule trước)
+# Secrets / env
 .env
 .env.local
 .env.*.local
 !.env.example
+**/secrets.yml
+**/vault-password
 
-# OS / editor junk
+# OS / editor
 .DS_Store
 Thumbs.db
 .vscode/*
 !.vscode/settings.json
 !.vscode/extensions.json
 .idea/
+*.swp
+*.swo
 
-# Claude session metadata
+# Claude session
 .claude/settings.local.json
+
+# Node / TypeScript (apps/web, checkin-admin, api-gateway, packages/*)
+node_modules/
+.pnpm-store/
+.next/
+out/
+.turbo/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# .NET (apps/core-api)
+**/bin/
+**/obj/
+**/*.user
+**/*.suo
+.vs/
+
+# Flutter (apps/mobile)
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.packages
+**/.pub-cache/
+**/.pub/
+**/build/
+**/pubspec.lock
+**/*.iml
+
+# iOS (apps/mobile/ios)
+**/Pods/
+**/.symlinks/
+**/Flutter/Flutter.framework
+**/Flutter/Flutter.podspec
+**/Flutter/flutter_export_environment.sh
+**/ServiceDefinitions.json
+**/xcuserdata/
+
+# Android (apps/mobile/android)
+**/.gradle/
+**/local.properties
+**/key.properties
+**/*.jks
+**/*.keystore
+
+# Docker
+**/.dockerignore.tmp
+
+# Generated files (Phase 1+ — openapi gen, proto gen)
+packages/contracts/openapi.json
+packages/contracts/src/gen/
+apps/mobile/lib/core/network/gen/
+apps/core-api/src/SaasCheckin.HttpApi.Host/Proto/
+
+# Test artifacts
+coverage/
+*.lcov
+.nyc_output/
+
+# Logs
+*.log
+logs/
+tmp/
+
+# Build cache
+.cache/
+.parcel-cache/
+.eslintcache

@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>SaasCheckin.Infrastructure</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SaasCheckin.Application\SaasCheckin.Application.csproj" />
+    <ProjectReference Include="..\SaasCheckin.EntityFrameworkCore\SaasCheckin.EntityFrameworkCore.csproj" />
+  </ItemGroup>
+</Project>

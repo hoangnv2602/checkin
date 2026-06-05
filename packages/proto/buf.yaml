@@ -1,0 +1,10 @@
+version: v2
+modules:
+  - path: .
+    name: buf.build/hoangnv2602/saas-checkin
+lint:
+  use:
+    - STANDARD
+breaking:
+  use:
+    - FILE

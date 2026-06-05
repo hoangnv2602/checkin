@@ -1,0 +1,31 @@
+# pnpm-workspace.yaml — I-001
+# Monorepo layout: 5 apps (web, checkin-admin, mobile, api-gateway, core-api)
+# + 6 shared packages (contracts, proto, ui, dart-core, eslint-config, tsconfig).
+#
+# Mobile (Flutter) không phải Node package nên pnpm không quản lý —
+# nó dùng melos.yaml (Dart) riêng. Tuy nhiên mobile cần OpenAPI TS types
+# từ contracts (Phase 1+), nên package contracts vẫn include ở đây cho
+# web/api-gateway import.
+#
+# .NET (core-api) cũng không qua pnpm — chạy độc lập qua `dotnet run`
+# trong apps/core-api/. CI gọi dotnet CLI riêng (xem .github/workflows/ci.yml).
+
+packages:
+  # Tenant-facing Next.js apps (D12, ADR-0014)
+  - "apps/web"
+  - "apps/checkin-admin"
+
+  # BFF
+  - "apps/api-gateway"
+
+  # Shared TS packages
+  - "packages/contracts"
+  - "packages/ui"
+  - "packages/eslint-config"
+  - "packages/tsconfig"
+
+  # ❌ Không include ở đây (không phải TS package):
+  # - apps/mobile        → Flutter, dùng melos.yaml
+  # - apps/core-api      → .NET 10, dùng dotnet CLI
+  # - packages/proto     → buf-managed, không phải npm package
+  # - packages/dart-core → Dart package, dùng melos.yaml

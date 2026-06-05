@@ -1,0 +1,28 @@
+version: v2
+managed:
+  enabled: true
+  override:
+    - file_option: csharp_namespace=SaasCheckin.Proto
+    - file_option: java_package=com.saascheckin.proto
+
+plugins:
+  # TypeScript — cho web + api-gateway
+  - local: protoc-gen-ts_proto
+    out: ../contracts/src/gen/ts
+    opt:
+      - outputServices=generic-definitions
+      - esModuleInterop=true
+      - useDate=true
+      - fileSuffix=_pb
+
+  # Dart — cho mobile
+  - remote: buf.build/protocolbuffers/dart
+    out: ../../apps/mobile/lib/core/network/gen/proto
+    opt:
+      - grpc
+
+  # C# — cho .NET core-api
+  - local: protoc-gen-grpc-csharp
+    out: ../../apps/core-api/src/SaasCheckin.HttpApi.Host/Proto
+    opt:
+      - file_extension=.g.cs

@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>SaasCheckin.Domain</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\shared\Shared.Domain\Shared.Domain.csproj" />
+    <ProjectReference Include="..\SaasCheckin.Domain.Core\SaasCheckin.Domain.Core.csproj" />
+  </ItemGroup>
+</Project>

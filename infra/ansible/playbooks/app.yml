@@ -1,0 +1,34 @@
+---
+# playbooks/app.yml — app server setup.
+# Caddy reverse proxy + docker-compose deploy script.
+- name: App server
+  hosts: app
+  become: yes
+  tasks:
+    - name: Create deploy directory
+      file:
+        path: /opt/saas-checkin
+        state: directory
+        owner: ansible
+        group: ansible
+
+    - name: Render docker-compose.yml
+      template:
+        src: docker-compose.app.yml.j2
+        dest: /opt/saas-checkin/docker-compose.yml
+        owner: ansible
+        group: ansible
+        mode: '0600'
+
+    - name: Render Caddyfile
+      template:
+        src: Caddyfile.j2
+        dest: /opt/saas-checkin/Caddyfile
+        owner: ansible
+        group: ansible
+
+    - name: Pull images + start stack
+      community.docker.docker_compose_v2:
+        project_src: /opt/saas-checkin
+        pull: always
+        state: present

@@ -1,0 +1,65 @@
+# .github/workflows/release.yml — I-006
+# semantic-release cho web/api-gateway. Trigger khi merge vào main.
+# Mobile dùng fastlane (Phase 4+).
+
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  packages: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  release:
+    name: semantic-release
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - uses: pnpm/action-setup@v4
+        with: { version: 9.12.0 }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Detect changed services
+        id: changed
+        run: |
+          # So sánh HEAD~1..HEAD — chỉ release service có file đổi
+          WEB=$(git diff --name-only HEAD~1 HEAD | grep -E "^apps/web/" | wc -l)
+          BFF=$(git diff --name-only HEAD~1 HEAD | grep -E "^apps/api-gateway/" | wc -l)
+          echo "web=$WEB" >> $GITHUB_OUTPUT
+          echo "bff=$BFF" >> $GITHUB_OUTPUT
+
+      - name: Release web
+        if: steps.changed.outputs.web > 0
+        run: pnpm --filter @saas-checkin/web release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Release api-gateway
+        if: steps.changed.outputs.bff > 0
+        run: pnpm --filter @saas-checkin/api-gateway release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build & push images
+        if: success()
+        uses: docker/build-push-action@v6
+        with:
+          context: apps/${{ matrix.service }}
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/${{ matrix.service }}:latest
+            ghcr.io/${{ github.repository_owner }}/${{ matrix.service }}:${{ github.sha }}
+        strategy:
+          matrix:
+            service: [web, api-gateway]

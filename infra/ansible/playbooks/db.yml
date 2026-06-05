@@ -1,0 +1,32 @@
+---
+# playbooks/db.yml — DB server setup.
+# Postgres 16 + Redis 7 + pgBackRest backup.
+- name: DB server
+  hosts: db
+  become: yes
+  tasks:
+    - name: Create data directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: 999
+        group: 999
+        mode: '0700'
+      loop:
+        - /opt/saas-checkin/data/postgres
+        - /opt/saas-checkin/data/redis
+        - /opt/saas-checkin/backups
+
+    - name: Render docker-compose.yml
+      template:
+        src: docker-compose.db.yml.j2
+        dest: /opt/saas-checkin/docker-compose.yml
+        owner: ansible
+        group: ansible
+        mode: '0600'
+
+    - name: Start DB stack
+      community.docker.docker_compose_v2:
+        project_src: /opt/saas-checkin
+        pull: always
+        state: present

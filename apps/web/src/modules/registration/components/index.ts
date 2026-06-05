@@ -1,0 +1,1 @@
+export { RegistrationPlaceholder } from "./RegistrationPlaceholder";

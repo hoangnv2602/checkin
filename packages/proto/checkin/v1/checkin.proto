@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package saascheckin.checkin.v1;
+
+option csharp_namespace = "SaasCheckin.Proto.Checkin.V1";
+option java_package = "com.saascheckin.checkin.v1";
+
+import "google/protobuf/timestamp.proto";
+
+// CheckInService — Staff scan QR code ở gate, verify, undo.
+service CheckInService {
+  // Scan một QR payload. Trả về success/failure + attendee info.
+  rpc Scan(ScanRequest) returns (ScanResponse);
+
+  // Get realtime stats cho 1 event (checked-in count, total, ...)
+  rpc GetEventStats(GetEventStatsRequest) returns (GetEventStatsResponse);
+
+  // Undo 1 check-in (vd: staff scan nhầm).
+  rpc UndoCheckIn(UndoCheckInRequest) returns (UndoCheckInResponse);
+}
+
+message ScanRequest {
+  string qr_payload = 1;            // JWT từ QR (Ed25519-signed, D5)
+  string event_id = 2;             // event đang check-in
+  string gate_id = 3;              // gate thiết bị (optional)
+  google.protobuf.Timestamp scanned_at = 4;
+}
+
+message ScanResponse {
+  bool ok = 1;
+  string message = 2;              // human-readable
+  Attendee attendee = 3;           // populated nếu ok=true
+  CheckInResult result = 4;        // enum-like (already_checked_in, expired_qr, ...)
+}
+
+enum CheckInResult {
+  CHECK_IN_RESULT_UNSPECIFIED = 0;
+  CHECK_IN_RESULT_OK = 1;
+  CHECK_IN_RESULT_ALREADY_CHECKED_IN = 2;
+  CHECK_IN_RESULT_EXPIRED_QR = 3;
+  CHECK_IN_RESULT_INVALID_QR = 4;
+  CHECK_IN_RESULT_WRONG_EVENT = 5;
+}
+
+message Attendee {
+  string user_id = 1;
+  string full_name = 2;
+  string email = 3;
+  string ticket_type = 4;          // VIP, GA, Student, ...
+  string avatar_url = 5;
+}
+
+message GetEventStatsRequest {
+  string event_id = 1;
+}
+
+message GetEventStatsResponse {
+  int32 total_registered = 1;
+  int32 total_checked_in = 2;
+  int32 total_pending = 3;
+  google.protobuf.Timestamp last_scan_at = 4;
+}
+
+message UndoCheckInRequest {
+  string registration_id = 1;       // hoặc qr_jti
+  string reason = 2;
+  string staff_user_id = 3;
+}
+
+message UndoCheckInResponse {
+  bool ok = 1;
+  string message = 2;
+}

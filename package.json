@@ -1,0 +1,32 @@
+{
+  "name": "saas-checkin",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Multi-tenant SaaS event check-in platform (Phase 0 skeleton)",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.12.0",
+  "scripts": {
+    "dev:up": "task dev:up",
+    "dev:down": "task dev:down",
+    "dev:logs": "task dev:logs",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\" --ignore-path .gitignore",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\" --ignore-path .gitignore",
+    "clean": "turbo run clean && rm -rf node_modules .turbo"
+  },
+  "devDependencies": {
+    "turbo": "2.3.3",
+    "prettier": "3.4.2",
+    "typescript": "5.7.2"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}

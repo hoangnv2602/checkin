@@ -1,0 +1,60 @@
+---
+# playbooks/common.yml — common setup cho mọi VPS.
+# - Docker + compose plugin
+# - UFW (firewall) — chỉ allow SSH, HTTP, HTTPS
+# - Fail2ban
+# - User `ansible` với SSH key
+# - Auto security updates
+- name: Common setup
+  hosts: all_vps
+  become: yes
+  tasks:
+    - name: Install base packages
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - ufw
+          - fail2ban
+          - unattended-upgrades
+        state: present
+        update_cache: yes
+
+    - name: Install Docker
+      include_role:
+        name: geerlingguy.docker
+
+    - name: Configure UFW
+      ufw:
+        rule: "{{ item.rule }}"
+        port: "{{ item.port }}"
+        proto: "{{ item.proto | default('tcp') }}"
+      loop:
+        - { rule: limit, port: 22 }      # SSH rate-limited
+        - { rule: allow, port: 80 }      # HTTP (Caddy)
+        - { rule: allow, port: 443 }     # HTTPS (Caddy)
+        - { rule: allow, port: 50051 }   # gRPC core-api (private network only)
+
+    - name: Enable UFW
+      ufw:
+        state: enabled
+        policy: deny
+        direction: incoming
+
+    - name: Configure Fail2ban
+      copy:
+        dest: /etc/fail2ban/jail.local
+        content: |
+          [sshd]
+          enabled = true
+          maxretry = 5
+          bantime = 3600
+      notify: restart fail2ban
+
+  handlers:
+    - name: restart fail2ban
+      service:
+        name: fail2ban
+        state: restarted

@@ -1,0 +1,1 @@
+export { MarketingPlaceholder } from "./MarketingPlaceholder";

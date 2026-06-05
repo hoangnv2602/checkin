@@ -1,0 +1,57 @@
+name: saas_checkin_mobile
+description: "Multi-tenant event check-in mobile app (staff)."
+publish_to: 'none'
+version: 0.0.0+1
+
+environment:
+  sdk: '>=3.6.0 <4.0.0'
+  flutter: '>=3.6.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management — D9: BLoC + Cubit
+  flutter_bloc: ^8.1.6
+  bloc: ^8.1.4
+  equatable: ^2.0.5
+
+  # Routing
+  go_router: ^14.6.2
+
+  # Networking
+  dio: ^5.7.0
+  retrofit: ^4.4.1
+
+  # Local DB
+  drift: ^2.21.0
+  drift_flutter: ^0.2.4
+  sqlite3_flutter_libs: ^0.5.27
+
+  # QR scanning
+  mobile_scanner: ^5.2.3
+
+  # Observability
+  sentry_flutter: ^8.13.0
+
+  # Misc
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+  intl: ^0.19.0
+  shared_preferences: ^2.3.3
+  flutter_secure_storage: ^9.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  bloc_test: ^9.1.7
+  mocktail: ^1.0.4
+  build_runner: ^2.4.13
+  drift_dev: ^2.21.0
+  freezed: ^2.5.7
+  json_serializable: ^6.8.0
+  retrofit_generator: ^9.1.5
+
+flutter:
+  uses-material-design: true

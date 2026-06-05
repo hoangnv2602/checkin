@@ -1,0 +1,141 @@
+# Taskfile.yml — I-009
+# Top-level commands. Chạy `task` (không có arg) để list tasks.
+# Cài: brew install go-task
+
+version: "3"
+
+vars:
+  COMPOSE_FILE: infra/docker/docker-compose.dev.yml
+
+env:
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  # ── Dev environment ─────────────────────────────────────────
+  dev:up:
+    desc: Spin up dev stack (postgres, redis, mailhog, minio)
+    cmds:
+      - docker compose -f {{.COMPOSE_FILE}} --env-file infra/docker/.env up -d
+      - task dev:health
+
+  dev:down:
+    desc: Stop dev stack (giữ volumes)
+    cmds:
+      - docker compose -f {{.COMPOSE_FILE}} down
+
+  dev:reset:
+    desc: Stop + xoá volumes (reset DB)
+    cmds:
+      - docker compose -f {{.COMPOSE_FILE}} down -v
+
+  dev:logs:
+    desc: Tail logs cho tất cả service
+    cmds:
+      - docker compose -f {{.COMPOSE_FILE}} logs -f
+
+  dev:health:
+    desc: Check health của từng service
+    cmds:
+      - docker compose -f {{.COMPOSE_FILE}} ps
+
+  # ── Database ────────────────────────────────────────────────
+  db:migrate:
+    desc: Chạy EF Core migrations (apps/core-api)
+    dir: apps/core-api
+    cmds:
+      - dotnet run --project src/SaasCheckin.DbMigrator
+
+  db:seed:
+    desc: Seed data mẫu (1 org + 1 owner + 1 event + 100 registrations)
+    cmds:
+      - task db:seed:run
+
+  db:seed:run:
+    desc: Run seed script
+    dir: tools/seed
+    cmds:
+      - ts-node seed.ts
+
+  # ── Code gen ────────────────────────────────────────────────
+  proto:gen:
+    desc: Generate TS + Dart từ proto
+    cmds:
+      - buf generate packages/proto
+
+  contracts:gen:
+    desc: Generate TS + Dart client từ OpenAPI
+    cmds:
+      - pnpm --filter @saas-checkin/contracts gen
+
+  # ── Quality ─────────────────────────────────────────────────
+  test:
+    desc: Run tất cả test
+    cmds:
+      - pnpm test
+      - cd apps/core-api && dotnet test
+
+  test:web:
+    cmds:
+      - pnpm --filter @saas-checkin/web test
+
+  test:api:
+    cmds:
+      - pnpm --filter @saas-checkin/api-gateway test
+
+  test:core:
+    dir: apps/core-api
+    cmds:
+      - dotnet test
+
+  test:mobile:
+    cmds:
+      - melos run test
+
+  lint:
+    desc: ESLint + .NET format check + dart analyze
+    cmds:
+      - pnpm lint
+      - cd apps/core-api && dotnet format --verify-no-changes
+      - melos run analyze
+
+  format:
+    desc: Auto-format toàn bộ
+    cmds:
+      - pnpm format
+      - cd apps/core-api && dotnet format
+      - melos run format
+
+  typecheck:
+    desc: TypeScript type check
+    cmds:
+      - pnpm typecheck
+
+  # ── Build ───────────────────────────────────────────────────
+  build:
+    desc: Build toàn bộ monorepo
+    cmds:
+      - pnpm build
+      - cd apps/core-api && dotnet build --configuration Release
+
+  clean:
+    desc: Xoá node_modules, build artifacts, .turbo
+    cmds:
+      - pnpm clean
+      - cd apps/core-api && dotnet clean
+      - rm -rf apps/core-api/**/bin apps/core-api/**/obj
+
+  # ── Skills (CLAUDE.md § Available skills) ──────────────────
+  skills:install:
+    desc: Restore 17 Claude skills (project scope)
+    cmds:
+      - bash tools/scripts/install-skills.sh
+
+  skills:install:dry-run:
+    desc: Liệt kê skill sẽ cài, không chạy
+    cmds:
+      - bash tools/scripts/install-skills.sh --dry-run

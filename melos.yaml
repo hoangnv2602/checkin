@@ -1,0 +1,30 @@
+# melos.yaml — quản lý Flutter workspace
+# Flutter mobile app (apps/mobile) + shared Dart package (packages/dart-core).
+# Tương đương pnpm workspace nhưng cho Dart/Flutter.
+
+name: saas_checkin_workspace
+
+packages:
+  - apps/mobile
+  - packages/dart-core
+
+command:
+  bootstrap:
+    runPubGetInParallel: false
+
+scripts:
+  analyze:
+    description: Run `dart analyze` in all packages
+    run: melos exec -c 1 -- "dart analyze"
+
+  format:
+    description: Run `dart format` in all packages
+    run: melos exec -c 1 -- "dart format ."
+
+  test:
+    description: Run `flutter test` in all packages
+    run: melos exec -c 1 -- "flutter test"
+
+  build:runner:
+    description: Run build_runner for drift / retrofit codegen
+    run: melos exec -c 1 -- "dart run build_runner build --delete-conflicting-outputs"

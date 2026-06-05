@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package saascheckin.identity.v1;
+
+option csharp_namespace = "SaasCheckin.Proto.Identity.V1";
+option java_package = "com.saascheckin.identity.v1";
+
+// IdentityService — Phase 1. Phase 0 chỉ khai báo skeleton.
+service IdentityService {
+  // Resolve user + memberships từ JWT (BFF gọi mỗi request).
+  rpc ResolveUser(ResolveUserRequest) returns (ResolveUserResponse);
+}
+
+message ResolveUserRequest {
+  string access_token = 1;
+}
+
+message ResolveUserResponse {
+  string user_id = 1;
+  string email = 2;
+  string full_name = 3;
+  repeated Membership memberships = 4;
+  repeated string permissions = 5;  // resolve từ RolePermissionMap
+}
+
+message Membership {
+  string tenant_id = 1;
+  string role = 2;                  // owner, admin, organizer, staff, viewer (D13)
+  string status = 3;                // active, invited, revoked
+}
