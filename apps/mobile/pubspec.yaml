@@ -31,6 +31,15 @@ dependencies:
   # QR scanning
   mobile_scanner: ^5.2.3
 
+  # Ed25519 (offline verify)
+  basic_utils: ^5.6.0
+
+  # Audio + haptic feedback
+  audioplayers: ^6.1.0
+
+  # Background sync
+  workmanager: ^0.5.2
+
   # Observability
   sentry_flutter: ^8.13.0
 
