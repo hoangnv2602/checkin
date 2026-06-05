@@ -1,10 +1,10 @@
 import { Module } from "@nestjs/common";
-import { Core-apiController } from "./core-api.controller";
+import { CoreApiController } from "./core-api.controller";
 
 /**
- * Core-apiModule — Phase 0 skeleton.
+ * CoreApiModule — Phase 0 skeleton.
  */
 @Module({
-  controllers: [Core-apiController],
+  controllers: [CoreApiController],
 })
-export class Core-apiModule {}
+export class CoreApiModule {}

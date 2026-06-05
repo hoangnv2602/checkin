@@ -1,6 +1,6 @@
 using SaasCheckin.Domain.Identity.Aggregates;
 using SaasCheckin.Domain.Identity.ValueObjects;
-using SaasCheckin.Shared.Application;     // IRepository<T, TKey>
+using SaasCheckin.Shared.Domain;     // IRepository<T, TKey>
 
 namespace SaasCheckin.Domain.Identity.Repositories;
 

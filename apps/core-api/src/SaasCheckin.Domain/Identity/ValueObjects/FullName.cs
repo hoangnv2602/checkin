@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using SaasCheckin.Shared.Domain.Core;     // Guard
 
 namespace SaasCheckin.Domain.Identity.ValueObjects;

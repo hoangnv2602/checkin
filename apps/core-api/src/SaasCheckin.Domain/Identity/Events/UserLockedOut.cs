@@ -1,6 +1,6 @@
 // File: Events/UserLockedOut.cs
 using SaasCheckin.Domain.Identity.ValueObjects;
-using SaasCheckin.Shared.Domain;
+using SaasCheckin.Shared.Domain.Core;
 
 namespace SaasCheckin.Domain.Identity.Events;
 
@@ -11,5 +11,6 @@ namespace SaasCheckin.Domain.Identity.Events;
 public sealed record UserLockedOut(
     UserId UserId,
     int FailedAttempts,
-    DateTimeOffset LockedUntil
+    DateTimeOffset LockedUntil,
+    DateTimeOffset OccurredAt
 ) : IDomainEvent;

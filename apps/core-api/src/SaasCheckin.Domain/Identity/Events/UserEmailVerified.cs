@@ -1,6 +1,6 @@
 // File: Events/UserEmailVerified.cs
 using SaasCheckin.Domain.Identity.ValueObjects;
-using SaasCheckin.Shared.Domain;
+using SaasCheckin.Shared.Domain.Core;
 
 namespace SaasCheckin.Domain.Identity.Events;
 

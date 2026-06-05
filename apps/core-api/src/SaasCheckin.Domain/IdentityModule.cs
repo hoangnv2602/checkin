@@ -1,24 +1,12 @@
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using SaasCheckin.Domain.Identity.Authorization;
-using SaasCheckin.Shared.Domain;
-
 namespace SaasCheckin.Domain.Identity;
 
 /// <summary>
-/// IdentityModule — bounded context registration.
-/// Phase 0: chỉ register DI. Phase 1+ register IUserRepository, IPasswordHasher, etc.
+/// IdentityModule — bounded context marker.
+/// Phase 0: registration body ở SaasCheckin.HttpApi.Host/Program.cs
+/// Phase 1+ (I-101): sẽ implement IBoundedContextModule với DI
+/// cho IUserRepository, IPasswordHasher, IClock.
 /// </summary>
-public sealed class IdentityModule : IBoundedContextModule
+public sealed class IdentityModule
 {
-    public string Name => "Identity";
-
-    public void Register(IServiceCollection services, IConfiguration configuration)
-    {
-        // TODO Phase 1 I-101:
-        // services.AddScoped<IUserRepository, EfUserRepository>();
-        // services.AddScoped<IUnitOfWork, EfUnitOfWork>();
-        // services.AddSingleton<IClock, SystemClock>();
-        // services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
-    }
+    public static string Name => "Identity";
 }

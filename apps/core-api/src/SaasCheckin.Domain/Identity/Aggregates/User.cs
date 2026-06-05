@@ -1,3 +1,4 @@
+using SaasCheckin.Utility;
 // =====================================================================
 // File: Aggregates/User.cs
 // Phase 1 preview — I-101 .NET Core 10 Identity context (D13 RBAC)
@@ -6,8 +7,7 @@
 
 using SaasCheckin.Domain.Identity.Events;
 using SaasCheckin.Domain.Identity.ValueObjects;
-using SaasCheckin.Shared.Domain;          // AggregateRoot<TKey>, IDomainEvent
-using SaasCheckin.Shared.Domain.Core;     // Guard, IClock
+using SaasCheckin.Shared.Domain.Core;          // AggregateRoot<TKey>, IDomainEvent
 
 namespace SaasCheckin.Domain.Identity.Aggregates;
 
@@ -104,7 +104,7 @@ public sealed class User : AggregateRoot<UserId>
         {
             var duration = lockoutDuration ?? TimeSpan.FromMinutes(15);
             LockedUntil = clock.UtcNow.Add(duration);
-            AddDomainEvent(new UserLockedOut(Id, FailedLoginCount, LockedUntil.Value));
+            AddDomainEvent(new UserLockedOut(Id, FailedLoginCount, LockedUntil.Value, clock.UtcNow));
         }
     }
 

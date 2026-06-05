@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace SaasCheckin.Shared.Domain;
+namespace SaasCheckin.Shared.Application.Contracts;
 
 /// <summary>
 /// IBoundedContextModule — DI registration cho mỗi bounded context.

@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using SaasCheckin.EntityFrameworkCore.Identity;
+using SaasCheckin.Shared.EntityFrameworkCore;
 using SaasCheckin.Shared.EntityFrameworkCore.Interceptors;
 
 namespace SaasCheckin.EntityFrameworkCore;

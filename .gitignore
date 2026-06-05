@@ -75,6 +75,10 @@ packages/contracts/src/gen/
 apps/mobile/lib/core/network/gen/
 apps/core-api/src/SaasCheckin.HttpApi.Host/Proto/
 
+# Next.js auto-generated
+apps/web/next-env.d.ts
+apps/checkin-admin/next-env.d.ts
+
 # Test artifacts
 coverage/
 *.lcov

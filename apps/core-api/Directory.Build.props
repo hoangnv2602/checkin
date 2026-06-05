@@ -15,5 +15,8 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <AnalysisLevel>latest</AnalysisLevel>
     <AnalysisMode>Recommended</AnalysisMode>
+    <!-- CA1716: "Shared" namespace conflicts with reserved keyword — namespace intentional -->
+    <!-- CA1305: IFormatProvider — Serilog Console() sink default is fine for Phase 0 -->
+    <NoWarn>$(NoWarn);CA1716;CA1305</NoWarn>
   </PropertyGroup>
 </Project>

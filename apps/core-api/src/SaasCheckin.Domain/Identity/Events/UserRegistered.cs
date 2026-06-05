@@ -1,7 +1,7 @@
 // File: Events/UserRegistered.cs
 using SaasCheckin.Domain.Identity.Aggregates;
 using SaasCheckin.Domain.Identity.ValueObjects;
-using SaasCheckin.Shared.Domain;          // IDomainEvent
+using SaasCheckin.Shared.Domain.Core;          // IDomainEvent
 
 namespace SaasCheckin.Domain.Identity.Events;
 

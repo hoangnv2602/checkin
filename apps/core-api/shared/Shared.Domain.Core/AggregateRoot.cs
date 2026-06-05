@@ -6,13 +6,23 @@ namespace SaasCheckin.Shared.Domain.Core;
 /// </summary>
 public abstract class AggregateRoot<TKey>
 {
+    /// <summary>Protected ctor cho derived class (để dùng : base(id)).</summary>
+    protected AggregateRoot() { }
+
+    /// <summary>Protected ctor với id.</summary>
+    protected AggregateRoot(TKey id) { Id = id; }
+
     public TKey Id { get; protected set; } = default!;
 
     /// <summary>Domain events raised bởi aggregate, drain khi persist.</summary>
     private readonly List<IDomainEvent> _domainEvents = new();
     public IReadOnlyList<IDomainEvent> DomainEvents => _domainEvents;
 
+    /// <summary>Raise 1 domain event (từ bên trong aggregate).</summary>
     protected void RaiseDomainEvent(IDomainEvent @event) => _domainEvents.Add(@event);
+
+    /// <summary>Alias cho RaiseDomainEvent — dùng ngoài partial class context.</summary>
+    protected void AddDomainEvent(IDomainEvent @event) => _domainEvents.Add(@event);
 
     public void ClearDomainEvents() => _domainEvents.Clear();
 }
