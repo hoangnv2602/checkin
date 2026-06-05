@@ -1,2 +1,2 @@
-// Hooks for $m module. Empty ở Phase 0.
-export {};
+// Server-side auth helper (RSC).
+export * from "./useAuth";

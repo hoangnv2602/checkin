@@ -4,7 +4,7 @@ interface PageProps {
   searchParams: Promise<{ redirect?: string }>;
 }
 
-export default async function LoginPage({ searchParams }: PageProps) {
+export default async function RegisterPage({ searchParams }: PageProps) {
   const { redirect } = await searchParams;
-  return <AuthPage mode="login" redirect={redirect} />;
+  return <AuthPage mode="register" redirect={redirect} />;
 }

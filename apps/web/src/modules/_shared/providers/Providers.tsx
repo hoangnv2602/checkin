@@ -3,15 +3,15 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 
+import { Toaster } from "@/components/ui/sonner";
+
 /**
  * Providers — root React provider tree.
  *
- * Phase 0: TanStack Query only.
+ * Phase 1: TanStack Query + sonner Toaster.
  * Phase 1+ sẽ thêm:
  *   - NextIntlClientProvider
  *   - ThemeProvider (dark/light)
- *   - AuthProvider (JWT context)
- *   - ToastProvider (sonner)
  */
 export function Providers({ children }: { children: React.ReactNode }) {
   const [client] = useState(
@@ -26,5 +26,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
       })
   );
 
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+  return (
+    <QueryClientProvider client={client}>
+      {children}
+      <Toaster richColors position="top-right" />
+    </QueryClientProvider>
+  );
 }
