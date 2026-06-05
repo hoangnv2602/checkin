@@ -1,0 +1,113 @@
+{
+  "_comment": "Danh sách skills cho project. Mỗi entry = 1 spec cho `npx skills add`. Verify version trên https://skills.sh/ trước khi update. Khi wipe .claude/skills/ hoặc fresh clone, chạy install-skills.sh để restore.",
+  "skills": [
+    {
+      "name": "vercel-react-best-practices",
+      "spec": "vercel-labs/agent-skills@vercel-react-best-practices",
+      "tier": 1,
+      "use": "React + Next.js component, page, data fetching, bundle"
+    },
+    {
+      "name": "web-design-guidelines",
+      "spec": "vercel-labs/agent-skills@web-design-guidelines",
+      "tier": 1,
+      "use": "Layout web, design discipline, accessibility"
+    },
+    {
+      "name": "frontend-design",
+      "spec": "anthropics/skills@frontend-design",
+      "tier": 1,
+      "use": "Build UI production-grade với design quality cao (Aurora palette)"
+    },
+    {
+      "name": "tailwind-v4-shadcn",
+      "spec": "vercel-labs/agent-skills@tailwind-v4-shadcn",
+      "tier": 1,
+      "use": "Add/config shadcn component, Tailwind 4 tokens, custom palette"
+    },
+    {
+      "name": "nestjs-best-practices",
+      "spec": "mikenikles/ai-sdk-skills@nestjs-best-practices",
+      "tier": 1,
+      "use": "NestJS controller / service / guard / module",
+      "_needs_verify": true
+    },
+    {
+      "name": "playwright-best-practices",
+      "spec": "microsoft/skills@playwright-best-practices",
+      "tier": 1,
+      "use": "E2E test cho Next.js apps (I-105)",
+      "_needs_verify": true
+    },
+    {
+      "name": "architecture-decision-records",
+      "spec": "joelparkerhenderson/architecture-decision-records",
+      "tier": 1,
+      "use": "Viết/sửa ADR (đã có 15 file ADR theo pattern)"
+    },
+    {
+      "name": "stripe-best-practices",
+      "spec": "stripe/ai@stripe-best-practices",
+      "tier": 1,
+      "use": "Code Billing context, tích hợp Stripe"
+    },
+    {
+      "name": "ansible-automation",
+      "spec": "ansible/ansible-automation",
+      "tier": 1,
+      "use": "Viết playbook cho Hetzner provisioning (I-018)",
+      "_needs_verify": true
+    },
+    {
+      "name": "efcore-patterns",
+      "spec": "entityframeworkcore/efcore-patterns",
+      "tier": 1,
+      "use": "EF Core 10 query, migration, tracking",
+      "_needs_verify": true
+    },
+    {
+      "name": "flutter-bloc",
+      "spec": "felangel/bloc@flutter-bloc",
+      "tier": 1,
+      "use": "Tạo BLoC/Cubit mới trong apps/mobile/lib/features/<name>/presentation/blocs/",
+      "_needs_verify": true
+    },
+    {
+      "name": "flutter-testing",
+      "spec": "felangel/bloc@flutter-testing",
+      "tier": 1,
+      "use": "Viết test cho mobile (bloc_test, mock)",
+      "_needs_verify": true
+    },
+    {
+      "name": "ddd-aggregate",
+      "spec": "joelparkerhenderson/ddd-aggregate",
+      "tier": 2,
+      "use": "Scaffold aggregate root + VO + repo interface + event + test stub (I-101, I-201, I-301, I-401)"
+    },
+    {
+      "name": "ddd-context",
+      "spec": "joelparkerhenderson/ddd-context",
+      "tier": 2,
+      "use": "Tạo bounded context module mới (7 context: Identity, Event, Ticketing, CheckIn, Billing, Notification, PlatformOps)"
+    },
+    {
+      "name": "multi-tenant-safety-checker",
+      "spec": "joelparkerhenderson/multi-tenant-safety-checker",
+      "tier": 2,
+      "use": "Review RLS bypass, tenant isolation, query filter (code path dùng app.current_tenant)"
+    },
+    {
+      "name": "rbac-policy-tester",
+      "spec": "joelparkerhenderson/rbac-policy-tester",
+      "tier": 2,
+      "use": "Test policy theo D13 (hybrid permission), verify Owner/Admin/Organizer/Staff/Viewer permission set"
+    },
+    {
+      "name": "postgres-rls",
+      "spec": "joelparkerhenderson/postgres-rls",
+      "tier": 2,
+      "use": "Review policy RLS, viết CREATE POLICY mới, debug query bị filter nhầm"
+    }
+  ]
+}

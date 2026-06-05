@@ -1,0 +1,21 @@
+# ── Phase 0 baseline .gitignore (I-001 sẽ mở rộng) ───────────────────────
+# Session 2026-06-05: chỉ ignore những thứ chắc chắn không commit.
+# Phase 0 chưa có code (docs only), nên danh sách này còn rỗng —
+# sẽ được mở rộng khi I-001 init monorepo (Node/.NET/Flutter/Docker).
+
+# Secrets (chưa có file nào nhưng rule trước)
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+
+# Claude session metadata
+.claude/settings.local.json

@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "_comment": "Project-level permissions allowlist (committed, shared với team). Cho local overrides dùng .claude/settings.local.json. Khi thêm tool mới, prefer add vào đây thay vì --dangerously-skip-permissions.",
+  "permissions": {
+    "allow": [
+      "Bash(npm:*)",
+      "Bash(pnpm:*)",
+      "Bash(yarn:*)",
+      "Bash(npx:*)",
+      "Bash(node:*)",
+
+      "Bash(dotnet:*)",
+
+      "Bash(flutter:*)",
+      "Bash(dart:*)",
+      "Bash(fvm:*)",
+
+      "Bash(docker:*)",
+      "Bash(docker-compose:*)",
+
+      "Bash(git status)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git stash:*)",
+      "Bash(git tag:*)",
+      "Bash(git checkout:*)",
+      "Bash(git switch:*)",
+      "Bash(git restore:*)",
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)",
+      "Bash(git merge:*)",
+      "Bash(git rebase:*)",
+      "Bash(git remote:*)",
+      "Bash(git rev-parse:*)",
+
+      "Bash(task:*)",
+      "Bash(buf:*)",
+
+      "Bash(make:*)",
+
+      "Bash(ansible:*)",
+      "Bash(ansible-playbook:*)",
+
+      "Bash(psql:*)",
+
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(touch:*)",
+      "Bash(chmod:*)",
+      "Bash(ln:*)",
+      "Bash(tar:*)",
+      "Bash(unzip:*)",
+
+      "Bash(ls:*)",
+      "Bash(pwd)",
+      "Bash(echo:*)",
+      "Bash(which:*)",
+      "Bash(env)",
+      "Bash(date:*)",
+
+      "Bash(wc:*)",
+      "Bash(file:*)",
+      "Bash(stat:*)",
+
+      "Bash(gh:*)",
+
+      "Bash(brew:*)",
+
+      "Read(/.agents/skills/**)",
+      "Read(/.claude/skills/**)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push:*)",
+      "Bash(curl -X POST:*)",
+      "Bash(curl -X PUT:*)",
+      "Bash(curl -X DELETE:*)",
+      "Bash(curl -X PATCH:*)",
+      "Bash(eval:*)"
+    ],
+    "ask": [
+      "Bash(rm:*)",
+      "Bash(sudo:*)",
+      "Bash(kill:*)",
+      "Bash(killall:*)",
+      "Bash(pkill:*)",
+      "Bash(reboot:*)",
+      "Bash(shutdown:*)"
+    ]
+  }
+}
