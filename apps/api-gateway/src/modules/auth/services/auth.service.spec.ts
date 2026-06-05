@@ -13,7 +13,7 @@ describe("AuthService", () => {
 
   beforeEach(() => {
     service = new AuthService();
-    fetchSpy = vi.spyOn(globalThis, "fetch");
+    fetchSpy = vi.spyOn(globalThis, "fetch" as any);
   });
 
   afterEach(() => {
@@ -40,7 +40,7 @@ describe("AuthService", () => {
     expect(result.accessToken).toBe("at");
     const [url, init] = fetchSpy.mock.calls[0]!;
     expect(url).toBe("http://localhost:0/v1/identity/login");
-    expect(init.method).toBe("POST");
+    expect((init as RequestInit).method).toBe("POST");
   });
 
   it("refresh posts refresh token", async () => {

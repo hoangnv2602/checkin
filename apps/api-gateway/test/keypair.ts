@@ -3,11 +3,11 @@
  *
  * Helper: generate RS256 keypair + sign JWT for JwtVerifierService tests.
  */
-import { exportSPKI, generateKeyPair, SignJWT, type KeyLike } from "jose";
+import { exportSPKI, generateKeyPair, SignJWT } from "jose";
 
 export interface TestKeyPair {
-  privateKey: KeyLike;
-  publicKey: KeyLike;
+  privateKey: CryptoKey;
+  publicKey: CryptoKey;
   publicPem: string;
   signToken: (claims: Record<string, unknown>) => Promise<string>;
 }
