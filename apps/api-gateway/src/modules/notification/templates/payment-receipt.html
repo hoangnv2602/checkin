@@ -1,0 +1,16 @@
+<!doctype html>
+<html>
+<body style="font-family: sans-serif; max-width: 560px; margin: 0 auto; padding: 24px;">
+  <h1 style="color: #18181b;">Payment received</h1>
+  <p>Hi {{ buyerName }},</p>
+  <p>Thanks for your order. Here&apos;s the receipt:</p>
+  <table style="margin: 16px 0; border-collapse: collapse;">
+    <tr><td style="padding: 4px 12px 4px 0; color: #71717a;">Order</td><td><code>{{ orderId }}</code></td></tr>
+    <tr><td style="padding: 4px 12px 4px 0; color: #71717a;">Tickets</td><td>{{ quantity }}</td></tr>
+    <tr><td style="padding: 4px 12px 4px 0; color: #71717a;">Total</td><td><strong>{{ totalFormatted }}</strong></td></tr>
+    <tr><td style="padding: 4px 12px 4px 0; color: #71717a;">Provider</td><td>{{ provider }}</td></tr>
+  </table>
+  <p>Your QR tickets have been sent in a separate email.</p>
+  <p style="margin-top: 32px; color: #71717a; font-size: 12px;">{{ orgName }} via SaasCheckin.</p>
+</body>
+</html>

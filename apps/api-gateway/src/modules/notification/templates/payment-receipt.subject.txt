@@ -1,0 +1,1 @@
+Receipt for {{ eventTitle }} — order {{ orderId }}

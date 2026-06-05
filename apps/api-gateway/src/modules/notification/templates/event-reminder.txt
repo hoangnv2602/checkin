@@ -1,0 +1,7 @@
+Hi {{ attendeeName }},
+
+Just a reminder — {{ eventTitle }} starts {{ eventStartAt }} at {{ venue }}.
+
+Have your QR ticket ready: {{ ticketUrl }}
+
+— {{ orgName }}

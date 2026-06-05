@@ -1,0 +1,12 @@
+Hi {{ buyerName }},
+
+We received your payment for {{ eventTitle }}.
+
+Order:        {{ orderId }}
+Tickets:      {{ quantity }}
+Total paid:   {{ totalFormatted }}
+Provider:     {{ provider }}
+
+Tickets have been emailed separately.
+
+— {{ orgName }}
