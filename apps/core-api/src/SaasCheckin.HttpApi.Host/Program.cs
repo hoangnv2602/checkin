@@ -1,10 +1,15 @@
 using MediatR;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
+using SaasCheckin.Application.CheckIn.Commands;
+using SaasCheckin.Application.CheckIn.Queries;
 using SaasCheckin.Application.Common.Behaviors;
-using SaasCheckin.Application.Registration;
+using SaasCheckin.Application.Reggistration;
+using SaasCheckin.Domain.CheckIn;
 using SaasCheckin.Domain.Identity;
+using SaasCheckin.Domain.Registration;
 using SaasCheckin.HttpApi.Host.Grpc;
+using SaasCheckin.Infrastructure.CheckIn;
 using SaasCheckin.Infrastructure.Extensions;
 using SaasCheckin.Infrastructure.Registration;
 using SaasCheckin.Shared.Application.Extensions;
@@ -45,6 +50,10 @@ builder.Services.AddBoundedContextModule<SaasCheckin.Domain.Registration.Registr
 builder.Services.AddBoundedContextModule<SaasCheckin.Infrastructure.Registration.RegistrationInfrastructureModule>(builder.Configuration);
 builder.Services.AddRegistrationModule();
 
+// CheckIn bounded-context modules (I-401): Domain (CanCheckInSpecification) + Infrastructure (repo + Redis cache + Ed25519 verifier).
+builder.Services.AddBoundedContextModule<CheckInModule>(builder.Configuration);
+builder.Services.AddBoundedContextModule<CheckInInfrastructureModule>(builder.Configuration);
+
 // Application services (ICurrentTenant, IPermissionChecker, IIntegrationEventBus)
 builder.Services.AddSaasCheckinApplication();
 
@@ -53,7 +62,8 @@ builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssemblies(
         typeof(SaasCheckin.Domain.Identity.IdentityModule).Assembly,
-        typeof(SaasCheckin.Application.Identity.Commands.RegisterUserCommand).Assembly);
+        typeof(SaasCheckin.Application.Identity.Commands.RegisterUserCommand).Assembly,
+        typeof(SaasCheckin.Application.CheckIn.Commands.ScanQrCommand).Assembly);
     cfg.AddOpenBehavior(typeof(PermissionBehavior<,>));
     cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
 });
