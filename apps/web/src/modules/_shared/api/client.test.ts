@@ -12,7 +12,7 @@ describe("bffFetch", () => {
   let fetchSpy: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
-    fetchSpy = vi.spyOn(globalThis, "fetch");
+    fetchSpy = vi.spyOn(globalThis, "fetch") as unknown as ReturnType<typeof vi.fn>;
   });
   afterEach(() => {
     vi.restoreAllMocks();
