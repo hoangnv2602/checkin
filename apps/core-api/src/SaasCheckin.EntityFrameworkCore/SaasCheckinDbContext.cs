@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using SaasCheckin.EntityFrameworkCore.Identity;
+using SaasCheckin.EntityFrameworkCore.Registration;
 using SaasCheckin.Shared.EntityFrameworkCore;
 
 namespace SaasCheckin.EntityFrameworkCore;
@@ -22,6 +23,15 @@ public sealed class SaasCheckinDbContext : SharedDbContext
 
     public DbSet<MembershipEntityConfiguration.MembershipEntity> Memberships
         => Set<MembershipEntityConfiguration.MembershipEntity>();
+
+    public DbSet<TicketTypeEntityConfiguration.TicketTypeEntity> TicketTypes
+        => Set<TicketTypeEntityConfiguration.TicketTypeEntity>();
+
+    public DbSet<OrderEntityConfiguration.OrderEntity> Orders
+        => Set<OrderEntityConfiguration.OrderEntity>();
+
+    public DbSet<RegistrationEntityConfiguration.RegistrationEntity> Registrations
+        => Set<RegistrationEntityConfiguration.RegistrationEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

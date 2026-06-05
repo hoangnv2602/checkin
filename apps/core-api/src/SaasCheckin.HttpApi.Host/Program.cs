@@ -2,9 +2,11 @@ using MediatR;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 using SaasCheckin.Application.Common.Behaviors;
+using SaasCheckin.Application.Registration;
 using SaasCheckin.Domain.Identity;
 using SaasCheckin.HttpApi.Host.Grpc;
 using SaasCheckin.Infrastructure.Extensions;
+using SaasCheckin.Infrastructure.Registration;
 using SaasCheckin.Shared.Application.Extensions;
 using Scalar.AspNetCore;
 using Serilog;
@@ -37,6 +39,11 @@ builder.Services.AddSaasCheckinDbContext(builder.Configuration);
 
 // Identity bounded-context module (BCrypt + JWT signing)
 builder.Services.AddBoundedContextModule<IdentityModule>(builder.Configuration);
+
+// Registration bounded-context modules (I-301): Domain (PricingService) + Application (repos/handlers) + Infrastructure (Ed25519 QR).
+builder.Services.AddBoundedContextModule<SaasCheckin.Domain.Registration.RegistrationModule>(builder.Configuration);
+builder.Services.AddBoundedContextModule<SaasCheckin.Infrastructure.Registration.RegistrationInfrastructureModule>(builder.Configuration);
+builder.Services.AddRegistrationModule();
 
 // Application services (ICurrentTenant, IPermissionChecker, IIntegrationEventBus)
 builder.Services.AddSaasCheckinApplication();
