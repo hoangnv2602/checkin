@@ -24,6 +24,7 @@
     <!-- CA1711: type names should not end in 'Permission' — IRequirePermission is intentional -->
     <!-- CA1725: param name 'ct' vs 'cancellationToken' — keep 'ct' brevity -->
     <!-- CA1707: test method names with underscores — convention for BDD-style test naming -->
-    <NoWarn>$(NoWarn);CA1716;CA1305;CA1848;CA1873;CA1826;CA1822;CA1711;CA1725;CA1707</NoWarn>
+    <!-- CA1861: constant array arguments — generated EF migrations pass new[] { ... }; refactor is not worth it -->
+    <NoWarn>$(NoWarn);CA1716;CA1305;CA1848;CA1873;CA1826;CA1822;CA1711;CA1725;CA1707;CA1861</NoWarn>
   </PropertyGroup>
 </Project>

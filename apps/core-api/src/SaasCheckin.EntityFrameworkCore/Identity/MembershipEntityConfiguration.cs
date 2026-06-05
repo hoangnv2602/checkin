@@ -3,21 +3,14 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace SaasCheckin.EntityFrameworkCore.Identity;
 
-public static class MembershipEntityConfiguration
+/// <summary>
+/// MembershipEntity — table mapping cho Membership aggregate.
+/// Bảng memberships là RLS-enforced (xem migration InitialIdentity, RLS policy
+/// <c>memberships_tenant_isolation</c>).
+/// </summary>
+public sealed class MembershipEntityConfiguration : IEntityTypeConfiguration<MembershipEntityConfiguration.MembershipEntity>
 {
-    public sealed class MembershipEntity
-    {
-        public Guid Id { get; set; }
-        public Guid UserId { get; set; }
-        public Guid TenantId { get; set; }   // = organization id
-        public string Role { get; set; } = default!;
-        public int Status { get; set; }      // 0=Pending, 1=Active, 2=Revoked
-        public DateTimeOffset InvitedAt { get; set; }
-        public DateTimeOffset? JoinedAt { get; set; }
-        public DateTimeOffset? RevokedAt { get; set; }
-    }
-
-    public static void Configure(EntityTypeBuilder<MembershipEntity> b)
+    public void Configure(EntityTypeBuilder<MembershipEntity> b)
     {
         b.ToTable("memberships");
         b.HasKey(x => x.Id);
@@ -31,10 +24,24 @@ public static class MembershipEntityConfiguration
         b.Property(x => x.RevokedAt).HasColumnName("revoked_at");
 
         // Unique: 1 user chỉ có 1 membership / org.
-        b.HasIndex(x => new { x.TenantId, x.UserId }).IsUnique();
+        b.HasIndex(x => new { x.TenantId, x.UserId })
+            .IsUnique()
+            .HasDatabaseName("IX_memberships_tenant_id_user_id");
         // Index phụ trợ cho query "list members of org"
-        b.HasIndex(x => x.TenantId);
+        b.HasIndex(x => x.TenantId).HasDatabaseName("IX_memberships_tenant_id");
         // Index phụ trợ cho query "list orgs of user"
-        b.HasIndex(x => x.UserId);
+        b.HasIndex(x => x.UserId).HasDatabaseName("IX_memberships_user_id");
+    }
+
+    public sealed class MembershipEntity
+    {
+        public Guid Id { get; set; }
+        public Guid UserId { get; set; }
+        public Guid TenantId { get; set; }   // = organization id
+        public string Role { get; set; } = default!;
+        public int Status { get; set; }      // 0=Pending, 1=Active, 2=Revoked
+        public DateTimeOffset InvitedAt { get; set; }
+        public DateTimeOffset? JoinedAt { get; set; }
+        public DateTimeOffset? RevokedAt { get; set; }
     }
 }
