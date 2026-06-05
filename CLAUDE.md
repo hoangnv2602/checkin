@@ -26,6 +26,76 @@ Multi-tenant **SaaS event check-in** platform. Organizers create events → sell
 11. **All shadcn components are added via CLI** (D11): `cd apps/web && yarn dlx shadcn@latest add <name>`. Never copy-paste a shadcn component, never hand-roll a Radix-based component. To customize, wrap the CLI-managed file in `src/modules/<module>/components/`.
 12. **Two Next.js apps, two different audiences.** `apps/web` is the **tenant-facing** app (organizer admin + public pages). `apps/checkin-admin` is the **platform owner** app (run-the-SaaS tooling: list tenants, suspend, refund, audit). They are **separate Next.js projects, separate deployments, separate domains** (`web.saas-checkin.com` vs `admin.saas-checkin.com`). The checkin-admin app uses a dedicated `app_platform_owner` Postgres role with `BYPASSRLS`; it never shares a JWT or BFF endpoint with the tenant app. Layout: [`docs/checkin-admin.md`](docs/checkin-admin.md). ADR: [`docs/adr/0014-checkin-admin-app.md`](docs/adr/0014-checkin-admin-app.md).
 
+## Agent workflow — autonomous execution rules
+
+> **Added 2026-06-05.** These rules OVERRIDE the default "ask before acting" behavior. Follow strictly.
+
+### 1. No re-confirmation — auto-pick recommended options
+
+When `AskUserQuestion` is needed, **always pick the option marked "(Recommended)"** and proceed. Do not stop to confirm. If the recommended option is missing, pick the safest default (most reversible, smallest blast radius) and proceed.
+
+When `EnterPlanMode` is needed, write the plan, call `ExitPlanMode`, and continue — do not stop to ask "is this plan okay?". ExitPlanMode IS the approval request.
+
+**Scope of auto-action (triệt để — no questions at all):**
+
+- ✅ Auto-run: `git add`, `git commit`, `git push` (use copy-pasteable snippet OR execute directly — agent's call, prefer direct execution to keep moving)
+- ✅ Auto-run: `pnpm build`, `pnpm test`, `pnpm lint`, `dotnet build`, `dotnet test`
+- ✅ Auto-run: file create/edit/delete, format, rename
+- ✅ Auto-run: restart dev services (BFF, web, .NET API), run migrations, apply seeds
+- ✅ Auto-run: install deps (`pnpm add`, `yarn dlx shadcn add`)
+- ✅ Auto-run: switch branches, create feature branches from `develop`
+- ✅ Auto-run: open PRs via `gh`
+- ⚠️ **Destructive (still confirm)** — these need explicit user OK:
+  - `git push --force` / `git push --force-with-lease`
+  - `git reset --hard` on shared branches
+  - Deleting a remote branch
+  - Dropping a Postgres database / truncating production data
+  - Modifying `.env` files with real secrets
+  - Editing `docs/adr/` (architectural decisions)
+
+### 2. Commit policy — agent runs commits directly
+
+**Old rule (deprecated):** "1 không commit nữa mọi commit sau này sẽ làm manual"
+
+**New rule:** Agent runs `git add` + `git commit` directly. Use `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>` trailer. Do NOT push unless the user explicitly asks. After committing, briefly state what was committed (files + commit hash + message).
+
+### 3. Context management — auto-compact at 90%
+
+**Trigger:** When starting a new issue / new task (i.e. when calling `TaskUpdate` to mark a task `in_progress`), check current context usage.
+
+**How to estimate:** After any tool call, observe the `total_tokens` in the system reminder if shown. If not shown, estimate by counting recent tool outputs (file reads > 500 lines, large build outputs, multi-file edits all consume context). As a rough rule: if the last 5+ tool results have been > 5KB each, context is likely > 70%.
+
+**Action when ≥ 90%:**
+
+1. Stop work immediately.
+2. Run `/compact` to summarize current state (issue in progress, files touched, current state of the work, what's left to do).
+3. After compact finishes, resume the task — do NOT ask the user "should I compact?".
+
+**Why:** Compacting mid-task loses 5–10 minutes of context. Compacting before a new task is cheap and prevents token-limit crashes mid-implementation.
+
+### 4. Process — sequential, don't pause
+
+For each issue / commit:
+
+1. Read the issue fully + linked docs.
+2. Spawn Explore / Plan agents in parallel if needed for cross-cutting research.
+3. `EnterPlanMode` only if the change is non-trivial (≥ 3 files, new pattern, architectural) — otherwise just implement.
+4. Implement, run local checks (`task lint && task test` or app-specific).
+5. E2E verify if there are runnable services.
+6. `git add` + `git commit` (Co-Authored-By trailer).
+7. Update task to `completed` via `TaskUpdate`.
+8. Immediately pick the next issue. **Do not stop to ask "what's next?"** — the issue list in `docs/issues/phase-1-*.md` is the source of truth. If a new issue depends on something not yet built, surface the blocker and move to the next unblocked one.
+
+### 5. Out-of-scope guardrails (still apply)
+
+Even with auto-execution, these are hard NO without explicit user instruction:
+
+- Modifying `apps/core-api/.../Migrations/*` manually (always use `dotnet ef migrations add`).
+- Adding a new payment provider without an ADR.
+- Bypassing RLS in tenant code paths (only `app_platform_owner` role with audit log).
+- Sharing JWT / cookie domain between `apps/web` and `apps/checkin-admin`.
+- Installing deps with `-g` flag (skills, CLIs).
+
 ## Tech stack (one-liner each)
 
 | Layer | Choice | Version |
