@@ -83,15 +83,16 @@ public sealed class UserRepository : IUserRepository
             new Shared.Domain.Core.SystemClock(),
         });
 #pragma warning restore CS8601
-        // Set private fields via reflection
-        typeof(User).GetProperty(nameof(User.EmailVerifiedAt))!.SetValue(user, e.EmailVerifiedAt);
-        typeof(User).GetProperty(nameof(User.LastLoginAt))!.SetValue(user, e.LastLoginAt);
-        typeof(User).GetProperty(nameof(User.LockedUntil))!.SetValue(user, e.LockedUntil);
-        typeof(User).GetProperty(nameof(User.FailedLoginCount))!.SetValue(user, e.FailedLoginCount);
-        typeof(User).GetProperty(nameof(User.AvatarUrl))!.SetValue(user, e.AvatarUrl);
-        typeof(User).GetProperty(nameof(User.Locale))!.SetValue(user, e.Locale);
-        typeof(User).GetProperty(nameof(User.CreatedAt))!.SetValue(user, e.CreatedAt);
-        typeof(User).GetProperty(nameof(User.UpdatedAt))!.SetValue(user, e.UpdatedAt);
+        // Set private setters via reflection (need NonPublic flag).
+        var flags = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
+        typeof(User).GetProperty(nameof(User.EmailVerifiedAt), flags)!.SetValue(user, e.EmailVerifiedAt);
+        typeof(User).GetProperty(nameof(User.LastLoginAt), flags)!.SetValue(user, e.LastLoginAt);
+        typeof(User).GetProperty(nameof(User.LockedUntil), flags)!.SetValue(user, e.LockedUntil);
+        typeof(User).GetProperty(nameof(User.FailedLoginCount), flags)!.SetValue(user, e.FailedLoginCount);
+        typeof(User).GetProperty(nameof(User.AvatarUrl), flags)!.SetValue(user, e.AvatarUrl);
+        typeof(User).GetProperty(nameof(User.Locale), flags)!.SetValue(user, e.Locale);
+        typeof(User).GetProperty(nameof(User.CreatedAt), flags)!.SetValue(user, e.CreatedAt);
+        typeof(User).GetProperty(nameof(User.UpdatedAt), flags)!.SetValue(user, e.UpdatedAt);
         return user;
     }
 

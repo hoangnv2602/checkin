@@ -8,7 +8,7 @@
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="FluentAssertions" />
-    <PackageReference Include="NetArchTest" />
+    <PackageReference Include="NetArchTest.Rules" />
     <ProjectReference Include="..\..\src\SaasCheckin.Domain\SaasCheckin.Domain.csproj" />
     <ProjectReference Include="..\..\src\SaasCheckin.Application\SaasCheckin.Application.csproj" />
     <ProjectReference Include="..\..\src\SaasCheckin.EntityFrameworkCore\SaasCheckin.EntityFrameworkCore.csproj" />

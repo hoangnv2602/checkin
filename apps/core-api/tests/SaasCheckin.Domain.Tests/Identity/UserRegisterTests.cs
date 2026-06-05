@@ -1,4 +1,4 @@
-// File: tests/UserTests.cs
+// Tests/SaasCheckin.Domain.Tests/Identity/UserRegisterTests.cs
 using FluentAssertions;
 using Moq;
 using SaasCheckin.Domain.Identity.Aggregates;
@@ -11,8 +11,8 @@ using Xunit;
 namespace SaasCheckin.Domain.Identity.Tests;
 
 /// <summary>
-/// Unit test stubs cho User aggregate. Run bằng `dotnet test` (xUnit + FluentAssertions).
-/// Phase 1 I-105 implement full test suite cho Identity context.
+/// Unit test suite cho User.Register + login/lockout state machine.
+/// I-105 commit 5.
 /// </summary>
 public class UserRegisterTests
 {
@@ -41,6 +41,7 @@ public class UserRegisterTests
         user.PasswordHash.Should().Be("$2a$12$hashed");
         user.CreatedAt.Should().Be(_now);
         user.FailedLoginCount.Should().Be(0);
+        user.LockedUntil.Should().BeNull();
     }
 
     [Fact]
@@ -58,6 +59,19 @@ public class UserRegisterTests
     }
 
     [Fact]
+    public void should_register_with_null_password_for_invited_user()
+    {
+        var user = User.Register(
+            Email.Create("invited@example.com"),
+            FullName.Create("Bob"),
+            _hasher.Object,
+            null,
+            _clock.Object);
+
+        user.PasswordHash.Should().BeNull();
+    }
+
+    [Fact]
     public void should_emit_user_registered_domain_event()
     {
         var user = User.Register(
@@ -70,6 +84,7 @@ public class UserRegisterTests
         user.DomainEvents.OfType<UserRegistered>().Should().HaveCount(1);
         var evt = user.DomainEvents.OfType<UserRegistered>().Single();
         evt.UserId.Should().Be(user.Id);
+        evt.Email.Value.Should().Be("alice@example.com");
         evt.OccurredAt.Should().Be(_now);
     }
 
@@ -121,20 +136,23 @@ public class UserRegisterTests
         for (var i = 0; i < 5; i++)
             user.RecordFailedLogin(_clock.Object, maxAttempts: 5);
 
-        user.ChangePassword(_hasher.Object, "NewP@ss", _clock.Object);
+        user.ChangePassword(_hasher.Object, "NewP@ssword", _clock.Object);
 
         user.LockedUntil.Should().BeNull();
         user.FailedLoginCount.Should().Be(0);
+        _hasher.Verify(h => h.HashPassword("NewP@ssword"), Times.Once);
     }
 
     [Fact]
-    public void verify_email_should_throw_when_already_verified()
+    public void should_touch_updated_at_on_mutation()
     {
-        var user = CreateUser();
-        user.VerifyEmail(_clock.Object);
+        var later = _now.AddMinutes(5);
+        _clock.SetupGet(c => c.UtcNow).Returns(later);
 
-        Action act = () => user.VerifyEmail(_clock.Object);
-        act.Should().Throw<BusinessRuleViolationException>();
+        var user = CreateUser();
+        user.RecordSuccessfulLogin(_clock.Object);
+
+        user.UpdatedAt.Should().Be(later);
     }
 
     // ----- helpers -----
@@ -142,6 +160,6 @@ public class UserRegisterTests
         Email.Create("alice@example.com"),
         FullName.Create("Alice"),
         _hasher.Object,
-        "p@ss",
+        "PlainP@ss",
         _clock.Object);
 }

@@ -39,6 +39,19 @@ jobs:
       - run: pnpm --filter @saas-checkin/web typecheck
       - run: pnpm --filter @saas-checkin/web test
       - run: pnpm --filter @saas-checkin/web build
+      - name: Install Playwright browsers
+        run: pnpm --filter @saas-checkin/web exec playwright install --with-deps chromium
+      - name: Run Playwright e2e
+        run: pnpm --filter @saas-checkin/web e2e
+        env:
+          CI: "true"
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-web
+          path: apps/web/playwright-report
+          retention-days: 7
 
   # ─────────────────────────────────────────────────────────────────
   # checkin-admin (platform-owner Next.js, D12)
@@ -101,6 +114,7 @@ jobs:
       - run: pnpm --filter @saas-checkin/api-gateway lint
       - run: pnpm --filter @saas-checkin/api-gateway typecheck
       - run: pnpm --filter @saas-checkin/api-gateway test
+      - run: pnpm --filter @saas-checkin/api-gateway test:e2e
       - run: pnpm --filter @saas-checkin/api-gateway build
       - run: buf lint packages/proto
 

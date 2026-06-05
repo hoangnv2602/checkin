@@ -3,7 +3,7 @@
  *
  * DTOs cho /v1/auth/* endpoints. Validate bằng class-validator.
  */
-import { IsEmail, IsString, MaxLength, MinLength } from "class-validator";
+import { IsEmail, IsNotEmpty, IsString, MaxLength, MinLength } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class LoginDto {
@@ -21,6 +21,7 @@ export class LoginDto {
 export class RefreshDto {
   @ApiProperty({ description: "Opaque refresh token (httponly cookie value)" })
   @IsString()
+  @IsNotEmpty()
   refreshToken!: string;
 }
 

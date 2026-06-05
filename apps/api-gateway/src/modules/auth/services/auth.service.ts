@@ -70,6 +70,7 @@ async function postJson<T>(path: string, body: unknown, tenantId?: string): Prom
     if (res.status === 401) throw new UnauthorizedException(text || "Unauthorized");
     throw new CoreApiError(res.status, text);
   }
+  if (res.status === 204) return undefined as T;
   return (await res.json()) as T;
 }
 
