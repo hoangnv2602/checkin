@@ -6,7 +6,7 @@
 "use client";
 
 import { useState } from "react";
-import { useEventsList, usePublishEvent, useCancelEvent } from "../hooks/useEvents";
+import { useEventsList, usePublishEvent, useCancelEvent, useCompleteEvent } from "../hooks/useEvents";
 import { EventListItem } from "./EventListItem";
 import { Button } from "@/components/ui/button";
 
@@ -19,6 +19,7 @@ export function EventsPage({ orgSlug }: EventsPageProps) {
   const { data, isLoading, error } = useEventsList({ status: statusFilter });
   const publishMutation = usePublishEvent();
   const cancelMutation = useCancelEvent();
+  const completeMutation = useCompleteEvent();
 
   return (
     <div className="space-y-6 p-8">
@@ -57,8 +58,10 @@ export function EventsPage({ orgSlug }: EventsPageProps) {
             event={event}
             onPublish={(id) => publishMutation.mutate(id)}
             onCancel={(id) => cancelMutation.mutate(id)}
+            onComplete={(id) => completeMutation.mutate(id)}
             publishing={publishMutation.isPending && publishMutation.variables === event.id}
             cancelling={cancelMutation.isPending && cancelMutation.variables === event.id}
+            completing={completeMutation.isPending && completeMutation.variables === event.id}
           />
         ))}
       </div>

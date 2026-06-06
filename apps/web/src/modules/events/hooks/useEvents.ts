@@ -14,6 +14,7 @@ import {
   updateEvent,
   publishEvent,
   cancelEvent,
+  completeEvent,
 } from "../services/eventsApi";
 
 export const eventsKeys = {
@@ -93,6 +94,30 @@ export function useCancelEvent() {
       const previous = qc.getQueryData<Event>(eventsKeys.detail(id));
       if (previous) {
         qc.setQueryData<Event>(eventsKeys.detail(id), { ...previous, status: "cancelled" });
+      }
+      return { previous };
+    },
+    onError: (_err, id, context) => {
+      if (context?.previous) {
+        qc.setQueryData(eventsKeys.detail(id), context.previous);
+      }
+    },
+    onSettled: (_data, _err, id) => {
+      qc.invalidateQueries({ queryKey: eventsKeys.detail(id) });
+      qc.invalidateQueries({ queryKey: eventsKeys.all });
+    },
+  });
+}
+
+export function useCompleteEvent() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => completeEvent(id),
+    onMutate: async (id) => {
+      await qc.cancelQueries({ queryKey: eventsKeys.detail(id) });
+      const previous = qc.getQueryData<Event>(eventsKeys.detail(id));
+      if (previous) {
+        qc.setQueryData<Event>(eventsKeys.detail(id), { ...previous, status: "completed" });
       }
       return { previous };
     },

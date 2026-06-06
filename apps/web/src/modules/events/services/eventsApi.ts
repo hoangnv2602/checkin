@@ -68,3 +68,7 @@ export async function publishEvent(id: string): Promise<Event> {
 export async function cancelEvent(id: string): Promise<Event> {
   return call<Event>(`/v1/events/${id}/cancel`, { method: "POST" });
 }
+
+export async function completeEvent(id: string): Promise<Event> {
+  return call<Event>(`/v1/events/${id}/complete`, { method: "POST" });
+}
