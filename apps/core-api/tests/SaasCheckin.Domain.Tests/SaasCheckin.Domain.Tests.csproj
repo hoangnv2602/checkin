@@ -9,6 +9,7 @@
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="FluentAssertions" />
     <PackageReference Include="Moq" />
+    <PackageReference Include="Stateless" />
     <ProjectReference Include="..\..\src\SaasCheckin.Domain\SaasCheckin.Domain.csproj" />
     <ProjectReference Include="..\..\shared\Utility\Utility.csproj" />
   </ItemGroup>

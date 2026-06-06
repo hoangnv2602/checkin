@@ -1,8 +1,9 @@
 using FluentAssertions;
-using SaasCheckin.Domain.Registration.Aggregates;
 using SaasCheckin.Domain.Registration.ValueObjects;
 using SaasCheckin.Shared.Domain.Core;
 using Xunit;
+
+using RegistrationStatus = SaasCheckin.Domain.Registration.Aggregates.RegistrationStatus;
 
 namespace SaasCheckin.Domain.Tests.Registration;
 
@@ -15,7 +16,7 @@ public class RegistrationTests
     private static readonly DateTimeOffset Now = new(2026, 6, 5, 10, 0, 0, TimeSpan.Zero);
     private static readonly FixedClock Clock = new(Now);
 
-    private static Registration NewReg() => Registration.Issue(
+    private static SaasCheckin.Domain.Registration.Aggregates.Registration NewReg() => SaasCheckin.Domain.Registration.Aggregates.Registration.Issue(
         OrgId, EventId, OrderId, TtId,
         "attendee@example.com", "Alice", "+84 901 234 567",
         TimeSpan.FromDays(1), Clock);
@@ -34,7 +35,7 @@ public class RegistrationTests
     [Fact]
     public void Issue_rejects_non_positive_validity()
     {
-        Action act = () => Registration.Issue(
+        Action act = () => SaasCheckin.Domain.Registration.Aggregates.Registration.Issue(
             OrgId, EventId, OrderId, TtId, "a@b.c", "X", null,
             TimeSpan.Zero, Clock);
         act.Should().Throw<ArgumentException>();

@@ -4,16 +4,14 @@ using SaasCheckin.Domain.CheckIn.Specifications;
 using SaasCheckin.Domain.CheckIn.ValueObjects;
 using SaasCheckin.Domain.EventManagement.Aggregates;
 using SaasCheckin.Domain.EventManagement.ValueObjects;
-using SaasCheckin.Domain.Registration.Aggregates;
-using SaasCheckin.Domain.Registration.ValueObjects;
 using SaasCheckin.Shared.Domain.Core;
 using Xunit;
 
 namespace SaasCheckin.Domain.Tests.CheckIn;
 
-internal sealed class FixedClock : IClock
+internal sealed class CanCheckInFixedClock : IClock
 {
-    public FixedClock(DateTimeOffset now) => UtcNow = now;
+    public CanCheckInFixedClock(DateTimeOffset now) => UtcNow = now;
     public DateTimeOffset UtcNow { get; }
 }
 
@@ -22,7 +20,7 @@ public class CanCheckInSpecificationTests
     private static readonly Guid OrgId = Guid.Parse("11111111-1111-1111-1111-111111111111");
     private static readonly Guid EventId = Guid.Parse("22222222-2222-2222-2222-222222222222");
     private static readonly DateTimeOffset Now = new(2026, 6, 5, 10, 0, 0, TimeSpan.Zero);
-    private static readonly FixedClock Clock = new(Now);
+    private static readonly CanCheckInFixedClock Clock = new(Now);
 
     private static Event PublishedEvent() => CreateEvent(EventStatus.Published);
 
@@ -35,7 +33,7 @@ public class CanCheckInSpecificationTests
         return e;
     }
 
-    private static Registration ActiveRegistration() => Registration.Issue(
+    private static SaasCheckin.Domain.Registration.Aggregates.Registration ActiveRegistration() => SaasCheckin.Domain.Registration.Aggregates.Registration.Issue(
         OrgId, EventId, Guid.NewGuid(), Guid.NewGuid(),
         "a@b.c", "X", null, TimeSpan.FromDays(1), Clock);
 
