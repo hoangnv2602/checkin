@@ -1,46 +1,120 @@
 @import "tailwindcss";
 
-/* Aurora tokens — copy từ apps/web/src/app/globals.css.
- * 2 app = 2 file = 2 release cadence. KHÔNG share.
- * Phase 0: giống apps/web baseline. Phase 1+ sync qua PR riêng.
+/* Aurora design system — full token set (Phase 1)
+ *
+ * Toàn bộ app phải dùng semantic tokens (bg-primary, text-foreground, ...).
+ * KHÔNG dùng default Tailwind palette (bg-indigo-500, text-gray-900, ...).
+ * Spec: docs/design-system.md.
+ *
+ * Mirror của apps/web/src/app/globals.css — 2 file = 2 release cadence.
+ * KHÔNG share file giữa 2 app (D12 + ADR-0014). Khi update token, sync qua
+ * 2 PR song song để giữ parity.
+ *
+ * Color values stored as HSL channel-only (`H S% L%`) để Tailwind dùng
+ * pattern `hsl(var(--token))` — mặc định shadcn.
  */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
   --color-border: var(--border);
+  --color-input: var(--input);
   --color-ring: var(--ring);
+  --radius: 0.625rem;
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --border: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --background: 40 20% 98%;
+  --foreground: 240 10% 9%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 10% 9%;
+  --primary: 247 80% 62%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 240 5% 96%;
+  --secondary-foreground: 240 6% 10%;
+  --muted: 240 5% 96%;
+  --muted-foreground: 240 4% 46%;
+  --accent: 16 100% 60%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --success: 160 84% 39%;
+  --success-foreground: 0 0% 100%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 0 0% 100%;
+  --border: 240 6% 90%;
+  --input: 240 6% 90%;
+  --ring: 247 80% 62%;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: oklch(0.145 0 0);
-    --foreground: oklch(0.985 0 0);
-    --primary: oklch(0.922 0 0);
-    --primary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.269 0 0);
-    --muted-foreground: oklch(0.708 0 0);
-    --border: oklch(0.269 0 0);
-    --ring: oklch(0.556 0 0);
+.dark {
+  --background: 240 10% 6%;
+  --foreground: 0 0% 98%;
+  --card: 240 10% 9%;
+  --card-foreground: 0 0% 98%;
+  --popover: 240 10% 9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 247 80% 68%;
+  --primary-foreground: 240 10% 9%;
+  --secondary: 240 4% 16%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 240 4% 16%;
+  --muted-foreground: 240 5% 65%;
+  --accent: 16 100% 62%;
+  --accent-foreground: 240 10% 9%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 98%;
+  --success: 160 70% 45%;
+  --success-foreground: 0 0% 100%;
+  --warning: 38 95% 56%;
+  --warning-foreground: 240 10% 9%;
+  --border: 240 4% 16%;
+  --input: 240 4% 16%;
+  --ring: 247 80% 68%;
+}
+
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  }
+  code, pre, .font-mono, [data-numeric] {
+    font-family: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, monospace;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: ui-sans-serif, system-ui, sans-serif;
+/* Aurora micro-elements — only neutral-utility allowed (per D11 exception). */
+.focus-ring {
+  outline: none;
+}
+.focus-ring:focus-visible {
+  box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring));
 }

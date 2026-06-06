@@ -1,19 +1,34 @@
+import Link from "next/link";
 import { AdminLoginForm } from "@/modules/auth/components/AdminLoginForm";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 /**
  * /login — Phase 1 (I-108)
- * Centered card: title + AdminLoginForm.
+ * Centered card với Aurora design system tokens.
  */
 export default function AdminLoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 p-4">
-      <div className="w-full max-w-md bg-card border border-border rounded-lg shadow-sm p-8 space-y-6">
-        <div className="text-center space-y-1">
-          <h1 className="text-2xl font-bold">saas-checkin Admin</h1>
-          <p className="text-sm text-muted-foreground">Đăng nhập quản trị nền tảng</p>
+    <div className="min-h-screen flex items-center justify-center bg-muted/40 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center space-y-2">
+          <div className="mx-auto size-10 rounded-lg bg-primary text-primary-foreground grid place-items-center text-sm font-bold">
+            sc
+          </div>
+          <CardTitle className="text-2xl">saas-checkin Admin</CardTitle>
+          <CardDescription>Đăng nhập quản trị nền tảng (BYPASSRLS role)</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <AdminLoginForm />
+        </CardContent>
+        <div className="px-6 pb-6 text-center">
+          <Link
+            href="https://saas-checkin.com"
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            ← Quay lại saas-checkin.com
+          </Link>
         </div>
-        <AdminLoginForm />
-      </div>
+      </Card>
     </div>
   );
 }
