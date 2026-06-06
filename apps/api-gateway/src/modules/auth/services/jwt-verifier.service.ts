@@ -16,6 +16,7 @@ import { REDIS } from "../../_shared/redis/redis.module";
 const SIGNING_KEY_CACHE_KEY = "jwt:signing:key";
 const ISSUER = "saas-checkin-core-api";
 const AUDIENCE_WEB = "web";
+const AUDIENCE_PLATFORM = "checkin-admin";
 
 interface CachedSigningKeyMaterial {
   // Accept both camelCase (preferred) and PascalCase (older .NET serialization) keys
@@ -35,10 +36,13 @@ export interface VerifiedAuth {
   sub: string;        // user id (UUID)
   email: string;
   fullName: string;
-  tenantId?: string;  // current tenant from claim
-  role?: string;
+  tenantId?: string;  // current tenant from claim (web audience only)
+  role?: string;      // web: tenant role | platform: platform role string
   permissions: string[];
   jti: string;
+  // Platform audience (aud=checkin-admin) extras
+  platformRole?: string;  // e.g. "platform_owner"
+  mfaEnabled?: boolean;
 }
 
 @Injectable()
@@ -76,8 +80,18 @@ export class JwtVerifierService {
     const perms = (payload["permission"] ?? []) as string | string[];
     const permissions = Array.isArray(perms) ? perms : [perms];
 
+    // Platform-admin audience extras (I-107)
+    const mfaClaim = payload["mfa"];
+    const mfaEnabled = typeof mfaClaim === "string" ? mfaClaim === "true" : mfaClaim === true;
+    const platformRole = (payload["role"] ?? undefined) as string | undefined;
+
     if (!sub) throw new UnauthorizedException("JWT missing 'sub' claim");
-    return { sub, email, fullName, tenantId, role, permissions, jti };
+    const result: VerifiedAuth = { sub, email, fullName, tenantId, role, permissions, jti };
+    // Set mfaEnabled = false explicitly (omitting means "not applicable"); UI distinguishes.
+    if (mfaClaim !== undefined) result.mfaEnabled = mfaEnabled;
+    // platformRole same string as role; expose separately để UI dùng dễ
+    if (platformRole && !tenantId) result.platformRole = platformRole;
+    return result;
   }
 
   private async getPublicKey(): Promise<string> {

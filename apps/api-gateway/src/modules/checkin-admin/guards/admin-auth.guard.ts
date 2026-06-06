@@ -30,13 +30,16 @@ export class AdminAuthGuard implements CanActivate {
   ) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
+    const req = ctx.switchToHttp().getRequest<AdminAuthenticatedRequest>();
+    // Chỉ áp dụng cho admin routes — tránh chặn tenant /v1/auth/* (audience 'web').
+    if (!req.path.startsWith("/v1/admin")) return true;
+
     const isPublic = this.reflector.getAllAndOverride<boolean>("isPublic", [
       ctx.getHandler(),
       ctx.getClass(),
     ]);
     if (isPublic) return true;
 
-    const req = ctx.switchToHttp().getRequest<AdminAuthenticatedRequest>();
     const token = this.extractToken(req);
     if (!token) throw new UnauthorizedException("Missing admin session");
 

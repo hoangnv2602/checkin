@@ -34,13 +34,17 @@ export class JwtAuthGuard implements CanActivate {
   ) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
+    const req = ctx.switchToHttp().getRequest<AuthenticatedRequest>();
+
+    // Skip platform-admin routes — AdminAuthGuard (aud=checkin-admin) handles those.
+    if (req.path?.startsWith("/v1/admin")) return true;
+
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       ctx.getHandler(),
       ctx.getClass(),
     ]);
     if (isPublic) return true;
 
-    const req = ctx.switchToHttp().getRequest<AuthenticatedRequest>();
     const token = this.extractToken(req);
     if (!token) {
       throw new UnauthorizedException("Missing Authorization header or cookie");

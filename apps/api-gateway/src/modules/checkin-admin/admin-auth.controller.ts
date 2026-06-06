@@ -41,10 +41,16 @@ export class AdminAuthController {
     }
     return {
       userId: result.userId,
+      email: result.email,
+      fullName: result.fullName,
+      role: result.role,
       mfaRequired: result.mfaRequired,
+      mfaSetupRequired: result.mfaSetupRequired,
       setupToken: result.mfaRequired ? result.accessToken : undefined, // short-lived setup token
       accessToken: result.mfaRequired ? undefined : result.accessToken,
       accessExpiresAt: result.accessExpiresAt,
+      refreshToken: result.mfaRequired ? undefined : result.refreshToken,
+      refreshExpiresAt: result.mfaRequired ? undefined : result.refreshExpiresAt,
     };
   }
 
@@ -88,8 +94,23 @@ export class AdminAuthController {
   @HttpCode(HttpStatus.OK)
   async verifyMfa(@Body() dto: AdminMfaVerifyDto, @Res({ passthrough: true }) res: Response) {
     const result = await this.auth.verifyMfa(dto.setupToken, dto.totpCode);
-    // After MFA verified, cookies can be set (use setupToken to claim real session)
-    return result;
+    // VerifyMfa returns full tokens once MFA is enabled — same shape as login
+    // (mfaRequired:false, mfaSetupRequired:false, real access + refresh).
+    if (result.accessToken && result.refreshToken) {
+      this.setAuthCookies(res, result.accessToken, result.refreshToken);
+    }
+    return {
+      userId: result.userId,
+      email: result.email,
+      fullName: result.fullName,
+      role: result.role,
+      mfaRequired: false,
+      mfaSetupRequired: false,
+      accessToken: result.accessToken,
+      accessExpiresAt: result.accessExpiresAt,
+      refreshToken: result.refreshToken,
+      refreshExpiresAt: result.refreshExpiresAt,
+    };
   }
 
   @Get("me")
@@ -97,7 +118,15 @@ export class AdminAuthController {
     if (!user) return { authenticated: false };
     return {
       authenticated: true,
-      user: { id: user.sub, email: user.email, role: user.role, permissions: user.permissions },
+      user: {
+        id: user.sub,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.platformRole ?? user.role,
+        platformRole: user.platformRole,
+        mfaEnabled: user.mfaEnabled ?? false,
+        permissions: user.permissions,
+      },
     };
   }
 

@@ -28,12 +28,15 @@ export class IpAllowlistGuard implements CanActivate {
   }
 
   canActivate(ctx: ExecutionContext): boolean {
+    const req = ctx.switchToHttp().getRequest<Request>();
+    // Chỉ áp dụng cho admin routes — tránh block /v1/auth/*, /v1/events/*, etc.
+    if (!req.path.startsWith("/v1/admin")) return true;
+
     if (this.cidrs.length === 0) {
       throw new ForbiddenException(
         "IpAllowlist not configured (set PLATFORM_ADMIN_IP_ALLOWLIST)",
       );
     }
-    const req = ctx.switchToHttp().getRequest<Request>();
     const ip = (req.headers["x-forwarded-for"] as string | undefined)?.split(",")[0]?.trim()
       ?? req.socket?.remoteAddress
       ?? "0.0.0.0";

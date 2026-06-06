@@ -4,9 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using SaasCheckin.Application.CheckIn.Commands;
 using SaasCheckin.Application.CheckIn.Queries;
 using SaasCheckin.Application.Common.Behaviors;
-using SaasCheckin.Application.Reggistration;
+using SaasCheckin.Application.PlatformOperations;
+using SaasCheckin.Application.Registration;
 using SaasCheckin.Domain.CheckIn;
 using SaasCheckin.Domain.Identity;
+using SaasCheckin.Domain.PlatformOperations;
 using SaasCheckin.Domain.Registration;
 using SaasCheckin.HttpApi.Host.Grpc;
 using SaasCheckin.Infrastructure.CheckIn;
@@ -55,8 +57,12 @@ builder.Services.AddBoundedContextModule<CheckInModule>(builder.Configuration);
 builder.Services.AddBoundedContextModule<CheckInInfrastructureModule>(builder.Configuration);
 
 // Billing bounded-context module (I-501): Subscription state machine + Plan limits.
-builder.Services.AddBoundedContextModule<BillingModule>(builder.Configuration);
-builder.Services.AddBillingApplication();
+builder.Services.AddBoundedContextModule<SaasCheckin.Domain.Billing.BillingModule>(builder.Configuration);
+// AddBillingApplication: aggregate handlers already scanned via MediatR assembly registration below.
+
+// PlatformOperations bounded-context module (I-107): TOTP verifier + DI cho platform auth.
+builder.Services.AddBoundedContextModule<PlatformOperationsModule>(builder.Configuration);
+builder.Services.AddPlatformApplication();
 
 // Application services (ICurrentTenant, IPermissionChecker, IIntegrationEventBus)
 builder.Services.AddSaasCheckinApplication();
@@ -68,13 +74,17 @@ builder.Services.AddMediatR(cfg =>
         typeof(SaasCheckin.Domain.Identity.IdentityModule).Assembly,
         typeof(SaasCheckin.Application.Identity.Commands.RegisterUserCommand).Assembly,
         typeof(SaasCheckin.Application.CheckIn.Commands.ScanQrCommand).Assembly,
-        typeof(SaasCheckin.Application.Billing.Commands.SubscribeToPlanCommand).Assembly);
+        typeof(SaasCheckin.Application.Billing.Commands.SubscribeToPlanCommand).Assembly,
+        typeof(SaasCheckin.Application.PlatformOperations.Commands.LoginCommand).Assembly);
     cfg.AddOpenBehavior(typeof(PermissionBehavior<,>));
     cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
 });
 
 // Controllers (REST endpoints — Phase 1 mirror gRPC for BFF/Playwright tests)
 builder.Services.AddControllers();
+
+// I-107: Platform admin auth filter (verify aud=checkin-admin Bearer token)
+builder.Services.AddScoped<SaasCheckin.HttpApi.Host.Middleware.PlatformAuthFilter>();
 
 // JWT bearer (for REST controllers / future SignalR) — gRPC uses metadata
 builder.Services.AddAuthentication("Bearer")

@@ -2,7 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SaasCheckin.Domain.PlatformOperations.Aggregates;
+using SaasCheckin.Domain.PlatformOperations.Repositories;
+using SaasCheckin.Domain.PlatformOperations.ValueObjects;
 using SaasCheckin.EntityFrameworkCore;
+using SaasCheckin.EntityFrameworkCore.PlatformOperations.Repositories;
 using SaasCheckin.Shared.Domain.Core;
 using SaasCheckin.Utility;
 
@@ -23,10 +27,13 @@ var connStr = configuration.GetConnectionString("Migrator")
 var services = new ServiceCollection();
 services.AddLogging(b => b.AddConsole().SetMinimumLevel(LogLevel.Information));
 services.AddDbContext<SaasCheckinDbContext>(opt => opt.UseNpgsql(connStr));
+// I-107: Register platform repos for seed
+services.AddScoped<IPlatformUserRepository, PlatformUserRepository>();
 
 await using var sp = services.BuildServiceProvider();
 var db = sp.GetRequiredService<SaasCheckinDbContext>();
 var logger = sp.GetRequiredService<ILogger<Program>>();
+var platformUsers = sp.GetRequiredService<IPlatformUserRepository>();
 
 logger.LogInformation("Applying migrations to {Database}", db.Database.GetConnectionString());
 await db.Database.MigrateAsync();
@@ -34,14 +41,18 @@ logger.LogInformation("✓ Migrations applied");
 
 // ---- Idempotent seed ----
 // Phase 1: 1 org (acme) + 1 owner user (alice@acme.test, password "AliceP@ss123")
-//          + 1 platform user (owner@saas-checkin.com, password "PlatformP@ss123", MFA disabled) — tạo ở I-106
-await SeedAsync(db, logger);
+//          + 1 platform user (owner@saas-checkin.com, password from env, MFA disabled) — I-107
+await SeedAsync(db, platformUsers, configuration, logger);
 
 logger.LogInformation("✓ Seed complete");
 return 0;
 
 // ---- Seed implementation ----
-static async Task SeedAsync(SaasCheckinDbContext db, ILogger logger)
+static async Task SeedAsync(
+    SaasCheckinDbContext db,
+    IPlatformUserRepository platformUsers,
+    IConfiguration configuration,
+    ILogger logger)
 {
     var hasher = new BCryptPasswordHasher();
     var clock = new SystemClock();
@@ -123,8 +134,39 @@ static async Task SeedAsync(SaasCheckinDbContext db, ILogger logger)
         logger.LogInformation("  = Membership alice → acme already exists, skipping");
     }
 
-    // ---- 4. Platform user (checkin-admin seed) — placeholder ----
-    // Bảng platform_users được tạo ở I-106 (PlatformOperations context).
-    // Phase 1 chỉ log hint cho dev khi cần login sớm.
-    logger.LogInformation("  ⓘ Platform user (I-106): owner@saas-checkin.com (skipped, table chưa tồn tại)");
+    // ---- 4. Platform admin user (I-107) ----
+    // Idempotent seed: tạo 1 platform user với role=PlatformOwner, password từ env.
+    // Phase 1 MFA disabled — bắt buộc setup ở lần login đầu (spec I-107).
+    var seedEmail = Environment.GetEnvironmentVariable("PLATFORM_ADMIN_SEED_EMAIL")
+        ?? configuration["PlatformAdmin:SeedEmail"]
+        ?? "owner@saas-checkin.com";
+    var seedPassword = Environment.GetEnvironmentVariable("PLATFORM_ADMIN_SEED_PASSWORD")
+        ?? configuration["PlatformAdmin:SeedPassword"]
+        ?? "PlatformP@ss123!";
+
+    var existingPlatformUser = await platformUsers.FindByEmailAsync(seedEmail);
+    if (existingPlatformUser is null)
+    {
+        try
+        {
+            var seedUser = PlatformUser.Invite(
+                Email.Create(seedEmail),
+                "Platform Owner",
+                hasher,
+                seedPassword,
+                PlatformRole.PlatformOwner,
+                clock);
+            await platformUsers.AddAsync(seedUser);
+            await db.SaveChangesAsync();
+            logger.LogInformation("  + Platform user: {Email} (PlatformOwner, id={UserId})", seedEmail, seedUser.Id.Value);
+        }
+        catch (ArgumentException ex)
+        {
+            logger.LogWarning("  ! Platform user seed failed: {Message} (set PLATFORM_ADMIN_SEED_PASSWORD ≥12 chars)", ex.Message);
+        }
+    }
+    else
+    {
+        logger.LogInformation("  = Platform user {Email} already exists, skipping", seedEmail);
+    }
 }

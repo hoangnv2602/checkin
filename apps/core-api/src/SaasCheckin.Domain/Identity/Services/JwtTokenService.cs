@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using SaasCheckin.Domain.Identity.Aggregates;
 using SaasCheckin.Domain.Identity.ValueObjects;
+using SaasCheckin.Domain.PlatformOperations.Aggregates;
 using SaasCheckin.Shared.Application.Tenancy;
 using SaasCheckin.Shared.Domain.Core;
 using StackExchange.Redis;
@@ -21,16 +22,23 @@ namespace SaasCheckin.Domain.Identity.Services;
 ///
 /// Refresh token: opaque (32 random bytes base64url) — KHÔNG phải JWT.
 /// Lưu Redis: <c>SET sess:rt:{userId}:{tokenId} {{userId,tokenId,issuedAt,exp}} EX 2592000</c>.
+///
+/// Two audiences share the same signing key:
+///  - <c>web</c> (15 min) — tenant users
+///  - <c>checkin-admin</c> (default 15 min, setupToken 5 min) — platform admins (I-107)
 /// </summary>
 public sealed class JwtTokenService : IJwtTokenService
 {
     private const string RedisSigningKeyCacheKey = "jwt:signing:key";
     private static readonly TimeSpan SigningKeyTtl = TimeSpan.FromHours(24);
     private static readonly TimeSpan AccessTokenTtl = TimeSpan.FromMinutes(15);
+    private static readonly TimeSpan PlatformAccessTokenTtl = TimeSpan.FromMinutes(15);
+    private static readonly TimeSpan PlatformSetupTokenTtl = TimeSpan.FromMinutes(5);
     private static readonly TimeSpan RefreshTokenTtl = TimeSpan.FromDays(30);
 
     private static readonly string JwtIssuer = "saas-checkin-core-api";
-    private static readonly string JwtAudience = "web";  // platform track dùng audience=checkin-admin
+    private static readonly string JwtAudience = "web";
+    private static readonly string JwtPlatformAudience = "checkin-admin";
 
     private readonly IConnectionMultiplexer? _redis;
     private readonly IClock _clock;
@@ -82,6 +90,48 @@ public sealed class JwtTokenService : IJwtTokenService
         var jwt = new JwtSecurityToken(
             issuer: JwtIssuer,
             audience: JwtAudience,
+            claims: claims,
+            notBefore: now.UtcDateTime,
+            expires: expires.UtcDateTime,
+            signingCredentials: creds);
+
+        var token = new JwtSecurityTokenHandler().WriteToken(jwt);
+        return new IssuedAccessToken(token, expires);
+    }
+
+    public async Task<IssuedAccessToken> IssuePlatformAccessAsync(
+        PlatformUser user,
+        IReadOnlyList<string> permissions,
+        TimeSpan? lifetime = null,
+        CancellationToken cancellationToken = default)
+    {
+        Guard.NotNull(user);
+
+        var keyMaterial = await GetOrCreateSigningKeyAsync(cancellationToken);
+        var key = new RsaSecurityKey(keyMaterial.PrivateKey) { KeyId = keyMaterial.KeyId };
+
+        var now = _clock.UtcNow;
+        var ttl = lifetime ?? PlatformAccessTokenTtl;
+        var expires = now.Add(ttl);
+
+        var claims = new List<Claim>
+        {
+            new(JwtRegisteredClaimNames.Sub, user.Id.Value.ToString()),
+            new(JwtRegisteredClaimNames.Email, user.Email.Value),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new("full_name", user.FullName),
+            // audience is added via JwtSecurityToken ctor `audience` arg — DO NOT
+            // also add `new("aud", ...)` to claims, or you'll get duplicate aud.
+            new("role", PlatformRoleName(user.Role)),
+            new("mfa", user.MfaEnabled ? "true" : "false"),
+        };
+        foreach (var perm in permissions)
+            claims.Add(new Claim("permission", perm));
+
+        var creds = new SigningCredentials(key, SecurityAlgorithms.RsaSha256);
+        var jwt = new JwtSecurityToken(
+            issuer: JwtIssuer,
+            audience: JwtPlatformAudience,
             claims: claims,
             notBefore: now.UtcDateTime,
             expires: expires.UtcDateTime,
@@ -149,6 +199,10 @@ public sealed class JwtTokenService : IJwtTokenService
         try
         {
             var handler = new JwtSecurityTokenHandler();
+            // MapInboundClaims = false keeps JWT short names ("sub", "email") as-is
+            // in the principal. Default true maps "sub" → ClaimTypes.NameIdentifier,
+            // "email" → ClaimTypes.Email, etc., which breaks FindFirst("sub").
+            handler.MapInboundClaims = false;
             var principal = handler.ValidateToken(accessToken, validationParams, out _);
             var sub = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
             if (sub is null || !Guid.TryParse(sub, out var userId))
@@ -167,6 +221,53 @@ public sealed class JwtTokenService : IJwtTokenService
         catch (Exception ex)
         {
             _logger.LogDebug(ex, "JWT verification failed");
+            return null;
+        }
+    }
+
+    public async Task<PlatformJwtClaims?> VerifyPlatformAccessAsync(
+        string accessToken,
+        CancellationToken cancellationToken = default)
+    {
+        Guard.NotNullOrWhiteSpace(accessToken);
+
+        var keyMaterial = await GetOrCreateSigningKeyAsync(cancellationToken);
+        var key = new RsaSecurityKey(keyMaterial.PublicKey) { KeyId = keyMaterial.KeyId };
+
+        var validationParams = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = JwtIssuer,
+            ValidateAudience = true,
+            ValidAudience = JwtPlatformAudience,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = key,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromSeconds(30),
+        };
+
+        try
+        {
+            var handler = new JwtSecurityTokenHandler();
+            // MapInboundClaims = false keeps JWT short names ("sub", "email") as-is
+            // in the principal. Default true maps "sub" → ClaimTypes.NameIdentifier,
+            // "email" → ClaimTypes.Email, etc., which breaks FindFirst("sub").
+            handler.MapInboundClaims = false;
+            var principal = handler.ValidateToken(accessToken, validationParams, out _);
+            var sub = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            if (sub is null || !Guid.TryParse(sub, out var userId))
+                return null;
+
+            var email = principal.FindFirst(JwtRegisteredClaimNames.Email)?.Value ?? string.Empty;
+            var fullName = principal.FindFirst("full_name")?.Value ?? string.Empty;
+            var role = principal.FindFirst("role")?.Value ?? string.Empty;
+            var permissions = principal.FindAll("permission").Select(c => c.Value).ToList();
+
+            return new PlatformJwtClaims(userId, email, fullName, role, permissions);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Platform JWT verification failed");
             return null;
         }
     }
@@ -234,6 +335,14 @@ public sealed class JwtTokenService : IJwtTokenService
 
     // ----- helpers -----
 
+    private static string PlatformRoleName(PlatformOperations.ValueObjects.PlatformRole role) => role switch
+    {
+        PlatformOperations.ValueObjects.PlatformRole.PlatformOwner => "platform_owner",
+        PlatformOperations.ValueObjects.PlatformRole.PlatformSupport => "platform_support",
+        PlatformOperations.ValueObjects.PlatformRole.PlatformEngineer => "platform_engineer",
+        _ => "platform_unknown",
+    };
+
     private (string? userId, string tokenId) ParseRefreshToken(string token)
     {
         var parts = token.Split(':');
@@ -251,8 +360,18 @@ public sealed class JwtTokenService : IJwtTokenService
                 if (cached.HasValue)
                 {
                     var material = JsonSerializer.Deserialize<SigningKeyMaterial>((string)cached!);
-                    if (material is not null && material.PrivateKey is not null && material.PublicKey is not null)
+                    // Rehydrate RSA from cached PEM. The RSA objects themselves
+                    // are [JsonIgnore]'d (can't serialize), so the deserialized
+                    // material has null PrivateKey/PublicKey. Re-create them
+                    // from the PEM strings so the cached key is actually usable.
+                    if (material is not null && !string.IsNullOrEmpty(material.PrivatePem))
+                    {
+                        material.PrivateKey = RSA.Create();
+                        material.PrivateKey.ImportFromPem(material.PrivatePem.AsSpan());
+                        material.PublicKey = RSA.Create();
+                        material.PublicKey.ImportFromPem(material.PublicPem.AsSpan());
                         return material;
+                    }
                 }
             }
             catch (Exception ex)

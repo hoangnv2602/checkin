@@ -10,6 +10,7 @@ import { CoreApiModule } from "./modules/core-api/core-api.module";
 import { GrpcModule } from "./modules/grpc/grpc.module";
 import { GrpcServerModule } from "./modules/grpc-server/grpc-server.module";
 import { RedisModule } from "./modules/_shared/redis/redis.module";
+import { CheckinAdminAuthModule } from "./modules/checkin-admin/admin-auth.module";
 import { JwtAuthGuard } from "./modules/auth/guards/jwt-auth.guard";
 
 @Module({
@@ -34,6 +35,7 @@ import { JwtAuthGuard } from "./modules/auth/guards/jwt-auth.guard";
     RealtimeModule,  // Socket.IO + Redis adapter — Phase 0 init
     JobsModule,      // BullMQ init — Phase 1
     CoreApiModule,   // gRPC client tới core-api:50051 — Phase 1
+    CheckinAdminAuthModule, // I-107: platform admin auth (POST /v1/admin/auth/*)
   ],
   providers: [
     // Global JWT guard — opt-out via @Public() decorator

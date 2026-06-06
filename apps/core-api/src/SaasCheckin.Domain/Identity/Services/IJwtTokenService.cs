@@ -1,5 +1,6 @@
 using SaasCheckin.Domain.Identity.Aggregates;
 using SaasCheckin.Domain.Identity.ValueObjects;
+using SaasCheckin.Domain.PlatformOperations.Aggregates;
 using SaasCheckin.Shared.Domain.Core;
 
 namespace SaasCheckin.Domain.Identity.Services;
@@ -11,13 +12,26 @@ namespace SaasCheckin.Domain.Identity.Services;
 ///
 /// Phase 1: signing key generate runtime + cache in Redis (24h TTL).
 /// Phase 6+: lưu trong <c>jwks_keys</c> table (auto-rotation).
+///
+/// Two audiences:
+///  - <c>web</c> — tenant users (Organization/Identity context)
+///  - <c>checkin-admin</c> — platform admins (PlatformOperations context, I-107)
+///
+/// Same RSA key is reused for both audiences; only the <c>aud</c> claim differs.
 /// </summary>
 public interface IJwtTokenService
 {
-    /// <summary>Issue access token (RS256, 15 min).</summary>
+    /// <summary>Issue tenant access token (RS256, 15 min, aud="web").</summary>
     Task<IssuedAccessToken> IssueAccessAsync(
         User user,
         IReadOnlyList<MembershipContext> activeMemberships,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Issue platform admin access token (RS256, 5 min setup / 15 min full, aud="checkin-admin").</summary>
+    Task<IssuedAccessToken> IssuePlatformAccessAsync(
+        PlatformUser user,
+        IReadOnlyList<string> permissions,
+        TimeSpan? lifetime = null,
         CancellationToken cancellationToken = default);
 
     /// <summary>Issue opaque refresh token (30 days), lưu Redis.</summary>
@@ -27,6 +41,11 @@ public interface IJwtTokenService
 
     /// <summary>Verify access token signature + claim. Trả null nếu invalid/expired.</summary>
     Task<JwtClaims?> VerifyAccessAsync(
+        string accessToken,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Verify platform admin access token (aud="checkin-admin"). Trả null nếu invalid/expired.</summary>
+    Task<PlatformJwtClaims?> VerifyPlatformAccessAsync(
         string accessToken,
         CancellationToken cancellationToken = default);
 
@@ -52,6 +71,14 @@ public sealed record JwtClaims(
     Guid UserId,
     Guid? ActiveTenantId,
     string? ActiveRole,
+    IReadOnlyList<string> Permissions);
+
+/// <summary>Resolved claim cho platform admin access token (aud="checkin-admin").</summary>
+public sealed record PlatformJwtClaims(
+    Guid UserId,
+    string Email,
+    string FullName,
+    string PlatformRole,
     IReadOnlyList<string> Permissions);
 
 /// <summary>Context cho JWT issue: tenant user đang active + role + permissions.</summary>

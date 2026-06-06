@@ -10,17 +10,21 @@
  *  - POST /v1/platform/mfa/verify
  *  - GET  /v1/platform/me
  */
-import { Injectable, Logger, UnauthorizedException } from "@nestjs/common";
+import { Injectable, Logger, ServiceUnavailableException, UnauthorizedException } from "@nestjs/common";
 
 const CORE_API_BASE = process.env.CORE_API_BASE ?? "http://localhost:5050";
 
 interface AdminLoginResponse {
   userId: string;
+  email: string;
+  fullName: string;
+  role: string;
   accessToken: string;
   accessExpiresAt: string;
   refreshToken: string;
   refreshExpiresAt: string;
   mfaRequired: boolean;
+  mfaSetupRequired: boolean;
 }
 
 interface AdminRefreshResponse {
@@ -52,6 +56,11 @@ async function postJson<T>(path: string, body: unknown, headers: Record<string, 
   if (!res.ok) {
     const text = await res.text();
     if (res.status === 401) throw new UnauthorizedException(text || "Unauthorized");
+    if (res.status === 404) {
+      throw new ServiceUnavailableException(
+        `core-api endpoint ${path} not implemented (Phase 2 PlatformOperations)`,
+      );
+    }
     throw new CoreApiError(res.status, text);
   }
   if (res.status === 204) return undefined as T;
@@ -82,8 +91,8 @@ export class AdminAuthService {
     );
   }
 
-  async verifyMfa(setupToken: string, totpCode: string): Promise<{ mfaEnabled: boolean }> {
-    return postJson<{ mfaEnabled: boolean }>(
+  async verifyMfa(setupToken: string, totpCode: string): Promise<AdminLoginResponse> {
+    return postJson<AdminLoginResponse>(
       "/v1/platform/mfa/verify",
       { setupToken, totpCode },
       { "x-platform-setup": "true" },
