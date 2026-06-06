@@ -1,6 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SaasCheckin.Application.Audit.Queries;
+using SaasCheckin.Infrastructure.Audit.Queries;
 
 namespace SaasCheckin.HttpApi.Host.Controllers.Audit;
 

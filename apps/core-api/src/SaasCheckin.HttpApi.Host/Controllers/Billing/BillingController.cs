@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SaasCheckin.Application.Billing.Commands;
+using SaasCheckin.Domain.Billing.ValueObjects;
 
 namespace SaasCheckin.HttpApi.Host.Controllers.Billing;
 
@@ -15,7 +16,7 @@ public sealed class BillingController : ControllerBase
     public async Task<IActionResult> Subscribe([FromBody] SubscribeRequestDto dto, CancellationToken ct)
     {
         var id = await _mediator.Send(new SubscribeToPlanCommand(
-            dto.OrganizationId, dto.PlanId, dto.StartTrial, dto.ExternalSubscriptionId), ct);
+            dto.OrganizationId, PlanId.From(dto.PlanId), dto.StartTrial, dto.ExternalSubscriptionId), ct);
         return Ok(new { subscription_id = id });
     }
 
@@ -29,7 +30,7 @@ public sealed class BillingController : ControllerBase
     [HttpPost("subscriptions/upgrade")]
     public async Task<IActionResult> Upgrade([FromBody] UpgradeRequestDto dto, CancellationToken ct)
     {
-        await _mediator.Send(new UpgradePlanCommand(dto.OrganizationId, dto.NewPlanId), ct);
+        await _mediator.Send(new UpgradePlanCommand(dto.OrganizationId, PlanId.From(dto.NewPlanId)), ct);
         return Ok();
     }
 }

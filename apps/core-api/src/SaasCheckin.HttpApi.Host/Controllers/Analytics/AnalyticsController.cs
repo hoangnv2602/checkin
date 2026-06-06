@@ -1,6 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using SaasCheckin.Application.Analytics.Queries;
+using SaasCheckin.Infrastructure.Analytics.Queries;
 
 namespace SaasCheckin.HttpApi.Host.Controllers.Analytics;
 

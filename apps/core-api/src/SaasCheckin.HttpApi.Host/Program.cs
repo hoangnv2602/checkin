@@ -64,6 +64,11 @@ builder.Services.AddBoundedContextModule<SaasCheckin.Domain.Billing.BillingModul
 builder.Services.AddBoundedContextModule<PlatformOperationsModule>(builder.Configuration);
 builder.Services.AddPlatformApplication();
 
+// EventManagement bounded-context module (I-201): Event + Session + Venue aggregates,
+// Application handlers (MediatR auto-discovered), gRPC stand-ins (Phase 2 wires BFF via REST).
+builder.Services.AddBoundedContextModule<SaasCheckin.Domain.EventManagement.EventManagementModule>(builder.Configuration);
+builder.Services.AddBoundedContextModule<SaasCheckin.Application.EventManagement.EventManagementApplicationModule>(builder.Configuration);
+
 // Application services (ICurrentTenant, IPermissionChecker, IIntegrationEventBus)
 builder.Services.AddSaasCheckinApplication();
 
@@ -75,7 +80,8 @@ builder.Services.AddMediatR(cfg =>
         typeof(SaasCheckin.Application.Identity.Commands.RegisterUserCommand).Assembly,
         typeof(SaasCheckin.Application.CheckIn.Commands.ScanQrCommand).Assembly,
         typeof(SaasCheckin.Application.Billing.Commands.SubscribeToPlanCommand).Assembly,
-        typeof(SaasCheckin.Application.PlatformOperations.Commands.LoginCommand).Assembly);
+        typeof(SaasCheckin.Application.PlatformOperations.Commands.LoginCommand).Assembly,
+        typeof(SaasCheckin.Application.EventManagement.Commands.CreateEventCommand).Assembly);
     cfg.AddOpenBehavior(typeof(PermissionBehavior<,>));
     cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
 });

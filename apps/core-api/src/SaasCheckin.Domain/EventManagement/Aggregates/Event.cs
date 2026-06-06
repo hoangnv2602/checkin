@@ -2,11 +2,21 @@ using SaasCheckin.Domain.EventManagement.Events;
 using SaasCheckin.Domain.EventManagement.ValueObjects;
 using SaasCheckin.Shared.Domain.Core;
 using SaasCheckin.Utility;
+using Stateless;
 
 namespace SaasCheckin.Domain.EventManagement.Aggregates;
 
 /// <summary>
-/// Event aggregate root. Multi-tenant — has OrganizationId for RLS.
+/// Event aggregate root. Multi-tenant — has OrganizationId cho RLS.
+///
+/// State machine (Stateless):
+///   Draft → Published → Completed
+///            ↘ Cancelled
+///
+/// Transitions:
+///   Publish   : Draft    → Published
+///   Cancel    : Draft|Published → Cancelled   (Completed không cancel được)
+///   Complete  : Published → Completed         (auto: endAt đã qua)
 /// </summary>
 public sealed class Event : AggregateRoot<EventId>
 {
@@ -20,8 +30,10 @@ public sealed class Event : AggregateRoot<EventId>
     public DateTimeOffset UpdatedAt { get; private set; }
     public int SoldTickets { get; private set; }
 
+    private readonly StateMachine<EventStatus, EventTrigger> _machine;
+
     // EF ctor
-    private Event() : base(default!) { }
+    private Event() : base(default!) { _machine = null!; }
 
     private Event(
         EventId id,
@@ -47,6 +59,9 @@ public sealed class Event : AggregateRoot<EventId>
         var now = clock.UtcNow;
         CreatedAt = now;
         UpdatedAt = now;
+
+        _machine = new StateMachine<EventStatus, EventTrigger>(() => Status, s => Status = s);
+        ConfigureMachine();
     }
 
     public static Event Create(
@@ -86,9 +101,7 @@ public sealed class Event : AggregateRoot<EventId>
 
     public void Publish(IClock clock)
     {
-        if (Status != EventStatus.Draft)
-            throw new InvalidOperationException($"Cannot publish event in status {Status}");
-        Status = EventStatus.Published;
+        _machine.Fire(EventTrigger.Publish);
         UpdatedAt = clock.UtcNow;
         RaiseDomainEvent(new EventPublished(Id, OrganizationId, Title, clock.UtcNow));
     }
@@ -96,11 +109,17 @@ public sealed class Event : AggregateRoot<EventId>
     public void Cancel(IClock clock)
     {
         if (Status == EventStatus.Cancelled) return;
-        if (Status == EventStatus.Completed)
-            throw new InvalidOperationException("Cannot cancel completed event");
-        Status = EventStatus.Cancelled;
+        _machine.Fire(EventTrigger.Cancel);
         UpdatedAt = clock.UtcNow;
         RaiseDomainEvent(new EventCancelled(Id, OrganizationId, clock.UtcNow));
+    }
+
+    public void Complete(IClock clock)
+    {
+        if (Status != EventStatus.Published)
+            throw new InvalidOperationException($"Cannot complete event in status {Status}");
+        _machine.Fire(EventTrigger.Complete);
+        UpdatedAt = clock.UtcNow;
     }
 
     /// <summary>Internal: called by Registration context when tickets are sold.</summary>
@@ -113,4 +132,18 @@ public sealed class Event : AggregateRoot<EventId>
         SoldTickets += delta;
         UpdatedAt = clock.UtcNow;
     }
+
+    private void ConfigureMachine()
+    {
+        _machine.Configure(EventStatus.Draft)
+            .Permit(EventTrigger.Publish, EventStatus.Published)
+            .Permit(EventTrigger.Cancel, EventStatus.Cancelled);
+        _machine.Configure(EventStatus.Published)
+            .Permit(EventTrigger.Cancel, EventStatus.Cancelled)
+            .Permit(EventTrigger.Complete, EventStatus.Completed);
+        _machine.Configure(EventStatus.Cancelled);
+        _machine.Configure(EventStatus.Completed);
+    }
 }
+
+public enum EventTrigger { Publish, Cancel, Complete }

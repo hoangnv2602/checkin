@@ -1,0 +1,258 @@
+syntax = "proto3";
+
+package saas_checkin.event.v1;
+
+option csharp_namespace = "SaasCheckin.Grpc.Event.V1";
+
+// EventService — RPC cho BFF (api-gateway) gọi sang core-api.
+//
+// Design notes:
+// - Mọi RPC đều yêu cầu `organization_id` trong metadata → set RLS
+//   `app.current_tenant` server-side, KHÔNG trust client.
+// - BFF cache GET events/{id} trong Redis 5 phút (event:{org}:{id}).
+service EventService {
+  // List — paginated; optional status filter.
+  rpc ListEvents(ListEventsRequest) returns (ListEventsResponse);
+
+  // Get — single event. Returns null nếu không tồn tại.
+  rpc GetEvent(GetEventRequest) returns (Event);
+
+  // Create — tạo draft event. Caller phải có permission event:create.
+  rpc CreateEvent(CreateEventRequest) returns (Event);
+
+  // Update — chỉ update được event ở trạng thái Draft.
+  rpc UpdateEvent(UpdateEventRequest) returns (Event);
+
+  // Publish — Draft → Published. Raises EventPublished domain event.
+  rpc PublishEvent(PublishEventRequest) returns (Event);
+
+  // Cancel — Draft|Published → Cancelled. Raises EventCancelled.
+  rpc CancelEvent(CancelEventRequest) returns (Event);
+
+  // Complete — Published → Completed (auto: endAt đã qua).
+  rpc CompleteEvent(CompleteEventRequest) returns (Event);
+
+  // === SESSIONS ===
+
+  // ListSessions — sessions thuộc 1 event.
+  rpc ListSessions(ListSessionsRequest) returns (ListSessionsResponse);
+
+  // AddSession — thêm 1 session vào event (Draft only).
+  rpc AddSession(AddSessionRequest) returns (Session);
+
+  // UpdateSession — chỉ update được Draft session.
+  rpc UpdateSession(UpdateSessionRequest) returns (Session);
+
+  // ChangeSessionStatus — Schedule/Start/End/Cancel.
+  rpc ChangeSessionStatus(ChangeSessionStatusRequest) returns (Session);
+}
+
+service VenueService {
+  // List — paginated; optional status filter.
+  rpc ListVenues(ListVenuesRequest) returns (ListVenuesResponse);
+
+  // Add — tạo venue mới.
+  rpc AddVenue(AddVenueRequest) returns (Venue);
+
+  // Update — chỉ update được Active|Inactive venue.
+  rpc UpdateVenue(UpdateVenueRequest) returns (Venue);
+
+  // ChangeStatus — Activate/Deactivate/Archive.
+  rpc ChangeVenueStatus(ChangeVenueStatusRequest) returns (Venue);
+}
+
+// =========================================================
+// EVENT
+// =========================================================
+message Event {
+  string id = 1;
+  string organization_id = 2;
+  string title = 3;
+  string description = 4;
+  string start_at = 5;             // ISO-8601
+  string end_at = 6;
+  int32 capacity = 7;
+  int32 sold_tickets = 8;
+  string status = 9;               // "draft" | "published" | "cancelled" | "completed"
+  string created_at = 10;
+  string updated_at = 11;
+}
+
+message ListEventsRequest {
+  string organization_id = 1;
+  string status = 2;               // optional: "" = all
+  int32 skip = 3;
+  int32 take = 4;
+}
+
+message ListEventsResponse {
+  repeated Event events = 1;
+}
+
+message GetEventRequest {
+  string organization_id = 1;
+  string event_id = 2;
+}
+
+message CreateEventRequest {
+  string organization_id = 1;
+  string title = 2;
+  string description = 3;
+  string start_at = 4;
+  string end_at = 5;
+  int32 capacity = 6;
+}
+
+message UpdateEventRequest {
+  string organization_id = 1;
+  string event_id = 2;
+  string title = 3;                // empty = no change
+  string description = 4;
+  string start_at = 5;
+  string end_at = 6;
+  int32 capacity = 7;
+  bool clear_description = 8;      // explicit clear
+}
+
+message PublishEventRequest {
+  string organization_id = 1;
+  string event_id = 2;
+}
+
+message CancelEventRequest {
+  string organization_id = 1;
+  string event_id = 2;
+}
+
+message CompleteEventRequest {
+  string organization_id = 1;
+  string event_id = 2;
+}
+
+// =========================================================
+// SESSION
+// =========================================================
+message Session {
+  string id = 1;
+  string organization_id = 2;
+  string event_id = 3;
+  string venue_id = 4;             // optional
+  string title = 5;
+  string description = 6;
+  string start_at = 7;
+  string end_at = 8;
+  int32 capacity = 9;
+  string status = 10;              // "draft" | "scheduled" | "started" | "ended" | "cancelled"
+  string created_at = 11;
+  string updated_at = 12;
+}
+
+message ListSessionsRequest {
+  string organization_id = 1;
+  string event_id = 2;
+  int32 skip = 3;
+  int32 take = 4;
+}
+
+message ListSessionsResponse {
+  repeated Session sessions = 1;
+}
+
+message AddSessionRequest {
+  string organization_id = 1;
+  string event_id = 2;
+  string title = 3;
+  string description = 4;
+  string start_at = 5;
+  string end_at = 6;
+  int32 capacity = 7;
+  string venue_id = 8;             // optional
+}
+
+message UpdateSessionRequest {
+  string organization_id = 1;
+  string session_id = 2;
+  string title = 3;
+  string description = 4;
+  string start_at = 5;
+  string end_at = 6;
+  int32 capacity = 7;
+  string venue_id = 8;
+  bool clear_description = 9;
+  bool clear_venue = 10;
+}
+
+message ChangeSessionStatusRequest {
+  string organization_id = 1;
+  string session_id = 2;
+  string action = 3;               // "schedule" | "start" | "end" | "cancel"
+}
+
+// =========================================================
+// VENUE
+// =========================================================
+message Venue {
+  string id = 1;
+  string organization_id = 2;
+  string name = 3;
+  string description = 4;
+  VenueAddress address = 5;
+  int32 capacity = 6;              // 0 = none (online venue)
+  double latitude = 7;             // 0 if absent
+  double longitude = 8;
+  bool has_geo = 9;
+  string status = 10;              // "active" | "inactive" | "archived"
+  string created_at = 11;
+  string updated_at = 12;
+}
+
+message VenueAddress {
+  string country = 1;              // ISO 3166-1 alpha-2
+  string street_line1 = 2;
+  string street_line2 = 3;
+  string city = 4;
+  string region = 5;
+  string postal_code = 6;
+}
+
+message ListVenuesRequest {
+  string organization_id = 1;
+  string status = 2;               // "" = all
+  int32 skip = 3;
+  int32 take = 4;
+}
+
+message ListVenuesResponse {
+  repeated Venue venues = 1;
+}
+
+message AddVenueRequest {
+  string organization_id = 1;
+  string name = 2;
+  string description = 3;
+  VenueAddress address = 4;
+  int32 capacity = 5;
+  double latitude = 6;
+  double longitude = 7;
+  bool has_geo = 8;
+}
+
+message UpdateVenueRequest {
+  string organization_id = 1;
+  string venue_id = 2;
+  string name = 3;
+  string description = 4;
+  VenueAddress address = 5;
+  int32 capacity = 6;
+  double latitude = 7;
+  double longitude = 8;
+  bool has_geo = 9;
+  bool clear_geo = 10;
+  bool clear_description = 11;
+}
+
+message ChangeVenueStatusRequest {
+  string organization_id = 1;
+  string venue_id = 2;
+  string action = 3;               // "activate" | "deactivate" | "archive"
+}
