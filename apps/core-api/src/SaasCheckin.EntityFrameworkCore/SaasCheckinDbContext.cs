@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using SaasCheckin.EntityFrameworkCore.Billing;
 using SaasCheckin.EntityFrameworkCore.CheckIn;
 using SaasCheckin.EntityFrameworkCore.Identity;
 using SaasCheckin.EntityFrameworkCore.Registration;
@@ -36,6 +37,15 @@ public sealed class SaasCheckinDbContext : SharedDbContext
 
     public DbSet<CheckInRecordEntityConfiguration.CheckInRecordEntity> CheckInRecords
         => Set<CheckInRecordEntityConfiguration.CheckInRecordEntity>();
+
+    public DbSet<PlanEntityConfiguration.PlanEntity> Plans
+        => Set<PlanEntityConfiguration.PlanEntity>();
+
+    public DbSet<SubscriptionEntityConfiguration.SubscriptionEntity> Subscriptions
+        => Set<SubscriptionEntityConfiguration.SubscriptionEntity>();
+
+    public DbSet<InvoiceEntityConfiguration.InvoiceEntity> Invoices
+        => Set<InvoiceEntityConfiguration.InvoiceEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

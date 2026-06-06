@@ -54,6 +54,10 @@ builder.Services.AddRegistrationModule();
 builder.Services.AddBoundedContextModule<CheckInModule>(builder.Configuration);
 builder.Services.AddBoundedContextModule<CheckInInfrastructureModule>(builder.Configuration);
 
+// Billing bounded-context module (I-501): Subscription state machine + Plan limits.
+builder.Services.AddBoundedContextModule<BillingModule>(builder.Configuration);
+builder.Services.AddBillingApplication();
+
 // Application services (ICurrentTenant, IPermissionChecker, IIntegrationEventBus)
 builder.Services.AddSaasCheckinApplication();
 
@@ -63,7 +67,8 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblies(
         typeof(SaasCheckin.Domain.Identity.IdentityModule).Assembly,
         typeof(SaasCheckin.Application.Identity.Commands.RegisterUserCommand).Assembly,
-        typeof(SaasCheckin.Application.CheckIn.Commands.ScanQrCommand).Assembly);
+        typeof(SaasCheckin.Application.CheckIn.Commands.ScanQrCommand).Assembly,
+        typeof(SaasCheckin.Application.Billing.Commands.SubscribeToPlanCommand).Assembly);
     cfg.AddOpenBehavior(typeof(PermissionBehavior<,>));
     cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
 });

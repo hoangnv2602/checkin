@@ -72,6 +72,9 @@
 
     <!-- Phase 3 (I-301) — Ed25519 for QR signing -->
     <PackageVersion Include="NSec.Cryptography" Version="24.4.0" />
+
+    <!-- Phase 5 (I-501) — Stateless for subscription state machine -->
+    <PackageVersion Include="Stateless" Version="5.16.0" />
   </ItemGroup>
 
   <ItemGroup>
