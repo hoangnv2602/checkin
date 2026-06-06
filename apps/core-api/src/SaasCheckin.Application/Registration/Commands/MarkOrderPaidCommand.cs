@@ -3,6 +3,7 @@ using SaasCheckin.Domain.Registration.Aggregates;
 using SaasCheckin.Domain.Registration.Repositories;
 using SaasCheckin.Shared.Application.IntegrationEvents;
 using SaasCheckin.Shared.Domain.Core;
+using RegistrationEntity = SaasCheckin.Domain.Registration.Aggregates.Registration;
 
 namespace SaasCheckin.Application.Registration.Commands;
 
@@ -54,7 +55,7 @@ public sealed class MarkOrderPaidCommandHandler
         var issued = new List<Domain.Registration.ValueObjects.RegistrationId>();
         for (var i = 0; i < order.Quantity; i++)
         {
-            var reg = Registration.Issue(
+            var reg = RegistrationEntity.Issue(
                 order.OrganizationId, order.EventId, order.Id, order.TicketTypeId,
                 order.BuyerEmail, $"{order.BuyerName} #{i + 1}", null,
                 TicketValidity, _clock);

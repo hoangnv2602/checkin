@@ -1,11 +1,12 @@
-using SaasCheckin.Domain.CheckIn.ValueObjects;
 using SaasCheckin.Domain.Registration.ValueObjects;
+using QrPayload = SaasCheckin.Domain.Registration.ValueObjects.QrPayload;
+using QrSignature = SaasCheckin.Domain.Registration.ValueObjects.QrSignature;
 
 namespace SaasCheckin.Domain.CheckIn.Services;
 
 /// <summary>
 /// IQrSignatureVerifier — verify Ed25519 chữ ký QR. Reuse
-/// <see cref="IQrCodeGenerator.Verify"/> từ Registration context.
+/// Registration context's IQrCodeGenerator để verify signature.
 /// </summary>
 public interface IQrSignatureVerifier
 {

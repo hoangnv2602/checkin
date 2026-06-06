@@ -3,6 +3,7 @@ using SaasCheckin.Domain.Registration.Aggregates;
 using SaasCheckin.Domain.Registration.Repositories;
 using SaasCheckin.Domain.Registration.Services;
 using SaasCheckin.Shared.Domain.Core;
+using RegistrationEntity = SaasCheckin.Domain.Registration.Aggregates.Registration;
 
 namespace SaasCheckin.Application.Registration.Commands;
 
@@ -48,7 +49,7 @@ public sealed class IssueTicketCommandHandler
         if (order.Status != OrderStatus.Paid)
             throw new InvalidOperationException($"Cannot issue ticket for order in status {order.Status}");
 
-        var reg = Registration.Issue(
+        var reg = RegistrationEntity.Issue(
             order.OrganizationId, order.EventId, order.Id, order.TicketTypeId,
             cmd.AttendeeEmail, cmd.AttendeeName, cmd.AttendeePhone,
             TicketValidity, _clock);

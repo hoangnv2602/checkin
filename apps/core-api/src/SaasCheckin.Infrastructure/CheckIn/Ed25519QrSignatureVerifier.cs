@@ -20,7 +20,7 @@ public sealed class Ed25519QrSignatureVerifier : IQrSignatureVerifier
 
     public bool Verify(QrPayload payload, QrSignature signature, Guid organizationId)
     {
-        var regPayload = new Registration.ValueObjects.QrPayload(
+        var regPayload = new SaasCheckin.Domain.Registration.ValueObjects.QrPayload(
             payload.Jti, payload.RegistrationId, payload.EventId, payload.OrganizationId,
             payload.IssuedAt, payload.ExpiresAt);
         return _generator.Verify(regPayload, signature, organizationId);

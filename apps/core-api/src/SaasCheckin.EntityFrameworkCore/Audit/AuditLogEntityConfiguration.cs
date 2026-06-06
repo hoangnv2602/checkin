@@ -16,7 +16,7 @@ public sealed class AuditLogEntityConfiguration
         b.ToTable("audit_log");
         b.HasKey(x => x.Id);
         b.Property(x => x.Id).HasColumnName("id");
-        b.Property(x => x.OrganizationId).HasColumnName("tenant_id").IsRequired();
+        b.Property(x => x.TenantId).HasColumnName("tenant_id").IsRequired();
         b.Property(x => x.ActorUserId).HasColumnName("actor_user_id").IsRequired();
         b.Property(x => x.ActorRole).HasColumnName("actor_role").HasMaxLength(40).IsRequired();
         b.Property(x => x.Action).HasColumnName("action").HasMaxLength(80).IsRequired();

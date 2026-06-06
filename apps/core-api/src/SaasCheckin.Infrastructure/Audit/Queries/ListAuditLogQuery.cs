@@ -1,12 +1,10 @@
-/**
- * apps/core-api/src/SaasCheckin.Application/Audit/Queries/ListAuditLogQuery.cs
- */
+// apps/core-api/src/SaasCheckin.Infrastructure/Audit/Queries/ListAuditLogQuery.cs
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SaasCheckin.EntityFrameworkCore;
 using SaasCheckin.EntityFrameworkCore.Audit;
 
-namespace SaasCheckin.Application.Audit.Queries;
+namespace SaasCheckin.Infrastructure.Audit.Queries;
 
 public sealed record ListAuditLogQuery(
     Guid OrganizationId,

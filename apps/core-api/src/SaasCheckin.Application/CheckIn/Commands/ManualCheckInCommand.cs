@@ -1,9 +1,11 @@
 using MediatR;
 using SaasCheckin.Domain.CheckIn.Aggregates;
+using SaasCheckin.Domain.CheckIn.Events;
 using SaasCheckin.Domain.CheckIn.Repositories;
 using SaasCheckin.Domain.CheckIn.Specifications;
 using SaasCheckin.Domain.CheckIn.ValueObjects;
 using SaasCheckin.Domain.EventManagement.Repositories;
+using SaasCheckin.Domain.EventManagement.ValueObjects;
 using SaasCheckin.Domain.Registration.Repositories;
 using SaasCheckin.Shared.Application.IntegrationEvents;
 using SaasCheckin.Shared.Domain.Core;
@@ -57,7 +59,7 @@ public sealed class ManualCheckInCommandHandler : IRequestHandler<ManualCheckInC
             ?? throw new InvalidOperationException($"No registration for {cmd.AttendeeEmail} in this event");
 
         var @event = await _events.FindByIdAsync(
-            EventManagement.ValueObjects.EventId.From(cmd.EventId), cmd.OrganizationId, ct)
+            EventId.From(cmd.EventId), cmd.OrganizationId, ct)
             ?? throw new InvalidOperationException("Event not found");
 
         var existingSuccess = await _records.ListSuccessByRegistrationAsync(

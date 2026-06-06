@@ -10,4 +10,7 @@ public sealed record SuspiciousDuplicate(
     Guid EventId,
     GateId GateId,
     Guid StaffUserId,
-    DateTimeOffset ScannedAt) : IDomainEvent;
+    DateTimeOffset ScannedAt) : IDomainEvent
+{
+    public DateTimeOffset OccurredAt => ScannedAt;
+}

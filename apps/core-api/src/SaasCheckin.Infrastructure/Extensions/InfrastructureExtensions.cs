@@ -3,8 +3,10 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SaasCheckin.Domain.Identity.Repositories;
+using SaasCheckin.Domain.PlatformOperations.Repositories;
 using SaasCheckin.EntityFrameworkCore;
 using SaasCheckin.EntityFrameworkCore.Interceptors;
+using SaasCheckin.EntityFrameworkCore.PlatformOperations.Repositories;
 using SaasCheckin.EntityFrameworkCore.Repositories;
 using SaasCheckin.Shared.Application.Tenancy;
 
@@ -38,6 +40,9 @@ public static class InfrastructureExtensions
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IOrganizationRepository, OrganizationRepository>();
         services.AddScoped<IMembershipRepository, MembershipRepository>();
+        // I-107: Platform admin repositories
+        services.AddScoped<IPlatformUserRepository, PlatformUserRepository>();
+        services.AddScoped<IPlatformSessionRepository, PlatformSessionRepository>();
 
         // Interceptor (singleton vì ICurrentTenant là singleton)
         services.AddSingleton<TenantDbConnectionInterceptor>();

@@ -8,5 +8,12 @@
     <ProjectReference Include="..\..\shared\Shared.Application\Shared.Application.csproj" />
     <ProjectReference Include="..\SaasCheckin.Application.Contracts\SaasCheckin.Application.Contracts.csproj" />
     <ProjectReference Include="..\SaasCheckin.Domain\SaasCheckin.Domain.csproj" />
+    <!--
+      TODO(refactor): Application layer currently wires EF Core repositories directly
+      via RegistrationApplicationModule. This violates DDD layering (Application → Domain
+      only; Infrastructure should compose). Move DI registration to Infrastructure's
+      RegistrationInfrastructureModule in Phase 9.
+    -->
+    <ProjectReference Include="..\SaasCheckin.EntityFrameworkCore\SaasCheckin.EntityFrameworkCore.csproj" />
   </ItemGroup>
 </Project>

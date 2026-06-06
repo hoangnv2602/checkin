@@ -1,10 +1,13 @@
 using MediatR;
 using SaasCheckin.Domain.CheckIn.Aggregates;
+using SaasCheckin.Domain.CheckIn.Events;
 using SaasCheckin.Domain.CheckIn.Repositories;
 using SaasCheckin.Domain.CheckIn.Services;
 using SaasCheckin.Domain.CheckIn.Specifications;
 using SaasCheckin.Domain.CheckIn.ValueObjects;
 using SaasCheckin.Domain.EventManagement.Repositories;
+using SaasCheckin.Domain.EventManagement.ValueObjects;
+using SaasCheckin.Domain.Registration.Aggregates;
 using SaasCheckin.Domain.Registration.Repositories;
 using SaasCheckin.Domain.Registration.ValueObjects;
 using SaasCheckin.Shared.Application.IntegrationEvents;
@@ -82,7 +85,7 @@ public sealed class ScanQrCommandHandler : IRequestHandler<ScanQrCommand, ScanQr
 
         // 2. Lookup event + registration
         var @event = await _events.FindByIdAsync(
-            EventManagement.ValueObjects.EventId.From(cmd.EventId), cmd.OrganizationId, ct)
+            EventId.From(cmd.EventId), cmd.OrganizationId, ct)
             ?? throw new InvalidOperationException("Event not found");
         var registration = await _registrations.FindByIdAsync(
             RegistrationId.From(cmd.RegistrationId), cmd.OrganizationId, ct)
@@ -107,7 +110,7 @@ public sealed class ScanQrCommandHandler : IRequestHandler<ScanQrCommand, ScanQr
             {
                 var reason = registration.Status != RegistrationStatus.Active
                     ? $"Registration is {registration.Status}"
-                    : @event.Status != EventManagement.ValueObjects.EventStatus.Published
+                    : @event.Status != EventStatus.Published
                         ? "Event not published"
                         : "Outside event window";
                 rec = CheckInRecord.Rejected(

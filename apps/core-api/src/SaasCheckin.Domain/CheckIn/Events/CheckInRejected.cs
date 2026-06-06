@@ -10,4 +10,7 @@ public sealed record CheckInRejected(
     Guid EventId,
     GateId GateId,
     string Reason,
-    DateTimeOffset ScannedAt) : IDomainEvent;
+    DateTimeOffset ScannedAt) : IDomainEvent
+{
+    public DateTimeOffset OccurredAt => ScannedAt;
+}

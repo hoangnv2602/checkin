@@ -1,5 +1,7 @@
 // apps/core-api/src/SaasCheckin.Domain/Billing/Events/PayoutDomainEvents.cs
 // I-803 — Domain + integration events cho Payout lifecycle.
+using SaasCheckin.Shared.Application.IntegrationEvents;
+
 namespace SaasCheckin.Domain.Billing.Events;
 
 public sealed record PayoutScheduledDomainEvent(
@@ -7,18 +9,27 @@ public sealed record PayoutScheduledDomainEvent(
     Guid OrganizationId,
     long AmountMinor,
     string Currency,
-    int CommissionBps);
+    int CommissionBps) : SaasCheckin.Shared.Domain.Core.IDomainEvent
+{
+    public DateTimeOffset OccurredAt { get; init; } = DateTimeOffset.UtcNow;
+}
 
 public sealed record PayoutCompletedDomainEvent(
     Guid PayoutId,
     Guid OrganizationId,
     long AmountMinor,
-    string Currency);
+    string Currency) : SaasCheckin.Shared.Domain.Core.IDomainEvent
+{
+    public DateTimeOffset OccurredAt { get; init; } = DateTimeOffset.UtcNow;
+}
 
 public sealed record PayoutFailedDomainEvent(
     Guid PayoutId,
     Guid OrganizationId,
-    string Reason);
+    string Reason) : SaasCheckin.Shared.Domain.Core.IDomainEvent
+{
+    public DateTimeOffset OccurredAt { get; init; } = DateTimeOffset.UtcNow;
+}
 
 /// <summary>
 /// Integration event — emitted lên Redis Streams / RabbitMQ qua Outbox pattern.
@@ -29,4 +40,7 @@ public sealed record PayoutCompletedIntegrationEvent(
     Guid OrganizationId,
     long AmountMinor,
     string Currency,
-    DateTime CompletedAt) : SaasCheckin.Shared.Contracts.IntegrationEvent;
+    DateTimeOffset CompletedAt) : IIntegrationEvent
+{
+    public DateTimeOffset OccurredAt => CompletedAt;
+}

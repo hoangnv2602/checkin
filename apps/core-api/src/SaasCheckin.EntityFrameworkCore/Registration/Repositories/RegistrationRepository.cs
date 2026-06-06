@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using SaasCheckin.Domain.Registration.Aggregates;
 using SaasCheckin.Domain.Registration.Repositories;
 using SaasCheckin.Domain.Registration.ValueObjects;
 using SaasCheckin.Shared.Domain.Core;
+using RegistrationEntity = SaasCheckin.Domain.Registration.Aggregates.Registration;
 
 namespace SaasCheckin.EntityFrameworkCore.Registration.Repositories;
 
@@ -17,7 +17,7 @@ public sealed class RegistrationRepository : IRegistrationRepository
         _clock = clock;
     }
 
-    public async Task<Registration?> FindByIdAsync(RegistrationId id, Guid organizationId, CancellationToken ct = default)
+    public async Task<RegistrationEntity?> FindByIdAsync(RegistrationId id, Guid organizationId, CancellationToken ct = default)
     {
         var e = await _db.Set<RegistrationEntityConfiguration.RegistrationEntity>()
             .AsNoTracking()
@@ -25,7 +25,7 @@ public sealed class RegistrationRepository : IRegistrationRepository
         return e is null ? null : MapToDomain(e);
     }
 
-    public async Task<Registration?> FindByJtiAsync(Guid jti, Guid organizationId, CancellationToken ct = default)
+    public async Task<RegistrationEntity?> FindByJtiAsync(Guid jti, Guid organizationId, CancellationToken ct = default)
     {
         var e = await _db.Set<RegistrationEntityConfiguration.RegistrationEntity>()
             .AsNoTracking()
@@ -33,7 +33,7 @@ public sealed class RegistrationRepository : IRegistrationRepository
         return e is null ? null : MapToDomain(e);
     }
 
-    public async Task<IReadOnlyList<Registration>> ListByOrderAsync(Guid orderId, Guid organizationId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<RegistrationEntity>> ListByOrderAsync(Guid orderId, Guid organizationId, CancellationToken ct = default)
     {
         var rows = await _db.Set<RegistrationEntityConfiguration.RegistrationEntity>()
             .AsNoTracking()
@@ -43,7 +43,7 @@ public sealed class RegistrationRepository : IRegistrationRepository
         return rows.Select(MapToDomain).ToList();
     }
 
-    public async Task<IReadOnlyList<Registration>> ListByEventAsync(Guid eventId, Guid organizationId, int skip, int take, CancellationToken ct = default)
+    public async Task<IReadOnlyList<RegistrationEntity>> ListByEventAsync(Guid eventId, Guid organizationId, int skip, int take, CancellationToken ct = default)
     {
         var rows = await _db.Set<RegistrationEntityConfiguration.RegistrationEntity>()
             .AsNoTracking()
@@ -54,7 +54,7 @@ public sealed class RegistrationRepository : IRegistrationRepository
         return rows.Select(MapToDomain).ToList();
     }
 
-    public async Task<IReadOnlyList<Registration>> ListByEmailAsync(string email, Guid organizationId, int skip, int take, CancellationToken ct = default)
+    public async Task<IReadOnlyList<RegistrationEntity>> ListByEmailAsync(string email, Guid organizationId, int skip, int take, CancellationToken ct = default)
     {
         var normalized = email.Trim().ToLowerInvariant();
         var rows = await _db.Set<RegistrationEntityConfiguration.RegistrationEntity>()
@@ -66,25 +66,25 @@ public sealed class RegistrationRepository : IRegistrationRepository
         return rows.Select(MapToDomain).ToList();
     }
 
-    public async Task AddAsync(Registration registration, CancellationToken ct = default)
+    public async Task AddAsync(RegistrationEntity registration, CancellationToken ct = default)
     {
         _db.Set<RegistrationEntityConfiguration.RegistrationEntity>().Add(MapToEntity(registration));
         await _db.SaveChangesAsync(ct);
     }
 
-    public async Task UpdateAsync(Registration registration, CancellationToken ct = default)
+    public async Task UpdateAsync(RegistrationEntity registration, CancellationToken ct = default)
     {
         _db.Set<RegistrationEntityConfiguration.RegistrationEntity>().Update(MapToEntity(registration));
         await _db.SaveChangesAsync(ct);
     }
 
-    private Registration MapToDomain(RegistrationEntityConfiguration.RegistrationEntity e) =>
-        Registration.Issue(
+    private RegistrationEntity MapToDomain(RegistrationEntityConfiguration.RegistrationEntity e) =>
+        RegistrationEntity.Issue(
             e.TenantId, e.EventId, e.OrderId, e.TicketTypeId,
             e.AttendeeEmail, e.AttendeeName, e.AttendeePhone,
             e.ExpiresAt - e.IssuedAt, _clock);
 
-    private RegistrationEntityConfiguration.RegistrationEntity MapToEntity(Registration r) => new()
+    private RegistrationEntityConfiguration.RegistrationEntity MapToEntity(RegistrationEntity r) => new()
     {
         Id = r.Id.Value,
         TenantId = r.OrganizationId,

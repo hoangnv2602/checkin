@@ -43,15 +43,19 @@ public sealed class Ed25519QrCodeGenerator : IQrCodeGenerator
     {
         var key = LoadOrDeriveKey(organizationId);
         var bytes = Canonicalize(payload);
-        return Algo.Verify(key, bytes, signature.Value);
+        return Algo.Verify(key.PublicKey, bytes, signature.Value);
     }
 
     private Key LoadOrDeriveKey(Guid organizationId)
     {
         var redis = _redis;
+        // StackExchange.Redis 2.8+ marks RedisKey operator+ obsolete in favour of WithPrefix,
+        // but WithPrefix lives on RedisChannel. Build the full key string then wrap in RedisKey
+        // constructor (the string ctor is the recommended compose path for RedisKey itself).
+        var cacheKey = new RedisKey(KeyCachePrefix.ToString() + organizationId);
         if (redis is not null)
         {
-            var cached = redis.GetDatabase().StringGet(KeyCachePrefix + organizationId.ToString());
+            var cached = redis.GetDatabase().StringGet(cacheKey);
             if (cached.HasValue)
             {
                 var seed = Convert.FromBase64String(cached!);
@@ -64,7 +68,7 @@ public sealed class Ed25519QrCodeGenerator : IQrCodeGenerator
         {
             var seed = key.Export(KeyBlobFormat.RawPrivateKey);
             redis.GetDatabase().StringSet(
-                KeyCachePrefix + organizationId.ToString(),
+                cacheKey,
                 Convert.ToBase64String(seed),
                 TimeSpan.FromHours(24));
         }

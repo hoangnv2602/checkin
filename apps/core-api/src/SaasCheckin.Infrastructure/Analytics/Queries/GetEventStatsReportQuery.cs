@@ -1,17 +1,15 @@
-/**
- * apps/core-api/src/SaasCheckin.Application/Analytics/Queries/GetEventStatsReportQuery.cs
- *
- * I-601 — Reports: total check-in, no-show rate, time-to-checkin (avg, p50, p95),
- * peak gate + peak time, cohort (registered vs attended theo ticket type).
- */
+// apps/core-api/src/SaasCheckin.Infrastructure/Analytics/Queries/GetEventStatsReportQuery.cs
+//
+// I-601 — Reports: total check-in, no-show rate, time-to-checkin (avg, p50, p95),
+// peak gate + peak time, cohort (registered vs attended theo ticket type).
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using SaasCheckin.EntityFrameworkCore;
 using SaasCheckin.EntityFrameworkCore.CheckIn;
 using SaasCheckin.EntityFrameworkCore.Registration;
-using SaasCheckin.Application.Analytics.Projections;
+using SaasCheckin.Infrastructure.Analytics.Projections;
 
-namespace SaasCheckin.Application.Analytics.Queries;
+namespace SaasCheckin.Infrastructure.Analytics.Queries;
 
 public sealed record GetEventStatsReportQuery(
     Guid OrganizationId,
@@ -66,7 +64,7 @@ public sealed class GetEventStatsReportQueryHandler
                 g.Key,
                 g.Count(),
                 g.Count(x => x.r.Status == 1),
-                g.Count() == 0 ? 0 : Math.Round(100.0 * g.Count(x => x.r.Status == 1) / g.Count(), 2)
+                !g.Any() ? 0 : Math.Round(100.0 * g.Count(x => x.r.Status == 1) / g.Count(), 2)
             ))
             .ToList();
 
@@ -97,7 +95,7 @@ public sealed class GetEventStatsReportQueryHandler
             .OrderByDescending(g => g.Count())
             .FirstOrDefault()?.Key.ToString() ?? "—";
         var peakTime = checkIns
-            .GroupBy(x => x.ScannedAt.Truncate(TimeSpan.FromMinutes(1)))
+            .GroupBy(x => new DateTimeOffset(x.ScannedAt.Year, x.ScannedAt.Month, x.ScannedAt.Day, x.ScannedAt.Hour, x.ScannedAt.Minute, 0, x.ScannedAt.Offset))
             .OrderByDescending(g => g.Count())
             .FirstOrDefault()?.Key;
 

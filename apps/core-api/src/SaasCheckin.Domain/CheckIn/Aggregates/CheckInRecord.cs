@@ -2,6 +2,7 @@ using SaasCheckin.Domain.CheckIn.Events;
 using SaasCheckin.Domain.CheckIn.ValueObjects;
 using SaasCheckin.Shared.Domain.Core;
 using SaasCheckin.Utility;
+using RegistrationRegId = SaasCheckin.Domain.Registration.ValueObjects.RegistrationId;
 
 namespace SaasCheckin.Domain.CheckIn.Aggregates;
 
@@ -78,11 +79,15 @@ public sealed class CheckInRecord : AggregateRoot<CheckInRecordId>
         Guid staffUserId,
         DateTimeOffset scannedAt,
         IClock clock)
-        => new(CheckInRecordId.New(), organizationId, eventId, registrationId, jti,
-               gateId, staffUserId, CheckInStatus.Success, null, scannedAt, clock)
-            .WithEvent(new AttendeeCheckedIn(
-                RegistrationId.From(registrationId), jti, organizationId, eventId,
-                gateId, staffUserId, scannedAt));
+    {
+        var record = new CheckInRecord(
+            CheckInRecordId.New(), organizationId, eventId, registrationId, jti,
+            gateId, staffUserId, CheckInStatus.Success, null, scannedAt, clock);
+        record.RaiseDomainEvent(new AttendeeCheckedIn(
+            RegistrationRegId.From(registrationId), jti, organizationId, eventId,
+            gateId, staffUserId, scannedAt));
+        return record;
+    }
 
     public static CheckInRecord Rejected(
         Guid organizationId,
@@ -94,10 +99,14 @@ public sealed class CheckInRecord : AggregateRoot<CheckInRecordId>
         string reason,
         DateTimeOffset scannedAt,
         IClock clock)
-        => new(CheckInRecordId.New(), organizationId, eventId, registrationId, jti,
-               gateId, staffUserId, CheckInStatus.Rejected, reason, scannedAt, clock)
-            .WithEvent(new CheckInRejected(
-                registrationId, jti, organizationId, eventId, gateId, reason, scannedAt));
+    {
+        var record = new CheckInRecord(
+            CheckInRecordId.New(), organizationId, eventId, registrationId, jti,
+            gateId, staffUserId, CheckInStatus.Rejected, reason, scannedAt, clock);
+        record.RaiseDomainEvent(new CheckInRejected(
+            registrationId, jti, organizationId, eventId, gateId, reason, scannedAt));
+        return record;
+    }
 
     public static CheckInRecord Duplicate(
         Guid organizationId,
@@ -108,15 +117,13 @@ public sealed class CheckInRecord : AggregateRoot<CheckInRecordId>
         Guid staffUserId,
         DateTimeOffset scannedAt,
         IClock clock)
-        => new(CheckInRecordId.New(), organizationId, eventId, registrationId, jti,
-               gateId, staffUserId, CheckInStatus.Duplicate,
-                "Already checked in", scannedAt, clock)
-            .WithEvent(new SuspiciousDuplicate(
-                registrationId, jti, organizationId, eventId, gateId, staffUserId, scannedAt));
-
-    private CheckInRecord WithEvent(IDomainEvent @event)
     {
-        RaiseDomainEvent(@event);
-        return this;
+        var record = new CheckInRecord(
+            CheckInRecordId.New(), organizationId, eventId, registrationId, jti,
+            gateId, staffUserId, CheckInStatus.Duplicate,
+            "Already checked in", scannedAt, clock);
+        record.RaiseDomainEvent(new SuspiciousDuplicate(
+            registrationId, jti, organizationId, eventId, gateId, staffUserId, scannedAt));
+        return record;
     }
 }

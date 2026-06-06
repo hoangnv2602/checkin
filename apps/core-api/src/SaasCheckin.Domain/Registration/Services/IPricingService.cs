@@ -12,7 +12,7 @@ public interface IPricingService
 {
     /// <summary>
     /// Quote cho 1 yêu cầu mua vé. Tính subtotal = unitPrice × quantity, áp
-    /// discount nếu có (resolve qua <paramref name="discountLookup"/>), trả total.
+    /// discount nếu có (resolve qua <paramref name="discountCode"/>), trả total.
     /// Trả null nếu discount code không hợp lệ / hết hạn.
     /// </summary>
     PricingQuote Quote(

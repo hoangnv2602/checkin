@@ -1,6 +1,7 @@
 using SaasCheckin.Domain.CheckIn.Aggregates;
 using SaasCheckin.Domain.EventManagement.Aggregates;
-using SaasCheckin.Domain.Registration.Aggregates;
+using RegistrationEntity = SaasCheckin.Domain.Registration.Aggregates.Registration;
+using RegistrationStatus = SaasCheckin.Domain.Registration.Aggregates.RegistrationStatus;
 
 namespace SaasCheckin.Domain.CheckIn.Specifications;
 
@@ -17,7 +18,7 @@ public sealed class CanCheckInSpecification
 {
     public bool IsSatisfiedBy(
         Event @event,
-        Registration registration,
+        RegistrationEntity registration,
         IReadOnlyList<CheckInRecord> existingSuccess,
         DateTimeOffset now)
     {

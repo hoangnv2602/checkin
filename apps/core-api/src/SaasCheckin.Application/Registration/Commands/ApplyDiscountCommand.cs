@@ -1,6 +1,7 @@
 using MediatR;
 using SaasCheckin.Domain.Registration.Repositories;
 using SaasCheckin.Domain.Registration.ValueObjects;
+using SaasCheckin.Shared.Domain.Core;
 
 namespace SaasCheckin.Application.Registration.Commands;
 

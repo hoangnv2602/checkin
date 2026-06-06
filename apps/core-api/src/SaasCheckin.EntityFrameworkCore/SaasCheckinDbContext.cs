@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using SaasCheckin.EntityFrameworkCore.Billing;
 using SaasCheckin.EntityFrameworkCore.CheckIn;
 using SaasCheckin.EntityFrameworkCore.Identity;
+using SaasCheckin.EntityFrameworkCore.PlatformOperations;
 using SaasCheckin.EntityFrameworkCore.Registration;
 using SaasCheckin.Shared.EntityFrameworkCore;
 
@@ -46,6 +47,13 @@ public sealed class SaasCheckinDbContext : SharedDbContext
 
     public DbSet<InvoiceEntityConfiguration.InvoiceEntity> Invoices
         => Set<InvoiceEntityConfiguration.InvoiceEntity>();
+
+    // I-107: Platform admin tables (no tenant_id, no RLS — global context).
+    public DbSet<PlatformUserEntityConfiguration.PlatformUserEntity> PlatformUsers
+        => Set<PlatformUserEntityConfiguration.PlatformUserEntity>();
+
+    public DbSet<PlatformSessionEntityConfiguration.PlatformSessionEntity> PlatformSessions
+        => Set<PlatformSessionEntityConfiguration.PlatformSessionEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -31,7 +31,7 @@ public sealed class RedisCheckInCache : ICheckInCache
     {
         var v = await _redis.GetDatabase().StringGetAsync(CountKey(eventId));
         _ = organizationId;
-        return v.HasValue && int.TryParse(v, out var n) ? n : null;
+        return v.HasValue && int.TryParse((string?)v, out var n) ? n : null;
     }
 
     public async Task SetStatusAsync(Guid registrationId, Guid organizationId, string status, CancellationToken ct = default)

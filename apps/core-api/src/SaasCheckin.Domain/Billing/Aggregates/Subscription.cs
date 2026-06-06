@@ -120,6 +120,8 @@ public sealed class Subscription : AggregateRoot<SubscriptionId>
         _machine.Fire(SubscriptionTrigger.Cancel);
         RaiseDomainEvent(new SubscriptionCancelled(Id, OrganizationId, PlanId, clock.UtcNow));
         // Cross-context: Identity context sẽ suspend org qua IntegrationEventBus
+        // Integration event cũng là domain event (implement IDomainEvent) — Outbox
+        // dispatcher sẽ filter IIntegrationEvent marker để route qua message bus.
         RaiseDomainEvent(new SubscriptionCancelledIntegrationEvent(
             Id, OrganizationId, PlanId, CancelledAt ?? clock.UtcNow, clock.UtcNow));
     }

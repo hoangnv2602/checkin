@@ -1,6 +1,8 @@
+using SaasCheckin.Domain.Billing.Aggregates;
 using SaasCheckin.Domain.Billing.Repositories;
 using SaasCheckin.Domain.Billing.Services;
 using SaasCheckin.Domain.EventManagement.Repositories;
+using SaasCheckin.Domain.EventManagement.ValueObjects;
 using SaasCheckin.Domain.Registration.Repositories;
 
 namespace SaasCheckin.Application.Billing.Services;
@@ -47,9 +49,9 @@ public sealed class PlanLimitEnforcer : IPlanLimitEnforcer
 
         return kind switch
         {
-            PlanLimitKind.ActiveEvents => CheckActiveEvents(organizationId, plan, ct),
-            PlanLimitKind.AttendeesThisMonth => CheckAttendeesThisMonth(organizationId, plan, requestedDelta, ct),
-            PlanLimitKind.StaffSeats => CheckStaffSeats(organizationId, plan, requestedDelta, ct),
+            PlanLimitKind.ActiveEvents => await CheckActiveEvents(organizationId, plan, ct),
+            PlanLimitKind.AttendeesThisMonth => await CheckAttendeesThisMonth(organizationId, plan, requestedDelta, ct),
+            PlanLimitKind.StaffSeats => await CheckStaffSeats(organizationId, plan, requestedDelta, ct),
             _ => PlanLimitCheck.Ok(),
         };
     }
@@ -57,7 +59,7 @@ public sealed class PlanLimitEnforcer : IPlanLimitEnforcer
     private async Task<PlanLimitCheck> CheckActiveEvents(Guid orgId, Plan plan, CancellationToken ct)
     {
         var events = await _events.ListAsync(orgId, null, 0, int.MaxValue, ct);
-        var published = events.Count(e => e.Status == EventManagement.ValueObjects.EventStatus.Published);
+        var published = events.Count(e => e.Status == EventStatus.Published);
         if (published >= plan.MaxActiveEvents)
             return PlanLimitCheck.Exceeded(plan.MaxActiveEvents, published,
                 $"Active events limit reached ({published}/{plan.MaxActiveEvents})");

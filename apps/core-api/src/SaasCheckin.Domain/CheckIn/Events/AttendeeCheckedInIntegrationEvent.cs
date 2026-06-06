@@ -13,4 +13,7 @@ public sealed record AttendeeCheckedInIntegrationEvent(
     Guid EventId,
     Guid GateId,
     Guid StaffUserId,
-    DateTimeOffset ScannedAt) : IIntegrationEvent;
+    DateTimeOffset ScannedAt) : IIntegrationEvent
+{
+    public DateTimeOffset OccurredAt => ScannedAt;
+}

@@ -49,7 +49,7 @@ public readonly record struct QrSignature
 
     public QrSignature(byte[] value)
     {
-        if (value is null) throw new ArgumentNullException(nameof(value));
+        ArgumentNullException.ThrowIfNull(value);
         if (value.Length != Size)
             throw new ArgumentException($"Ed25519 signature must be {Size} bytes", nameof(value));
         Value = value;
