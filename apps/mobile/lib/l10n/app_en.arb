@@ -1,0 +1,21 @@
+{
+  "@@locale": "en",
+  "appName": "SaasCheckin",
+  "scanTitle": "Scan ticket",
+  "scanSuccess": "Check-in confirmed",
+  "scanDuplicate": "Already checked in",
+  "scanRejected": "Rejected: {reason}",
+  "scanOffline": "Offline — queued for sync",
+  "manualLookup": "Or look up manually",
+  "emailLabel": "Attendee email",
+  "checkInManual": "Check in manually",
+  "dashboardTitle": "Live check-in",
+  "live": "Live",
+  "reconnecting": "Reconnecting…",
+  "statsCheckedIn": "Checked in",
+  "statsTotal": "Total registrations",
+  "statsPercent": "% complete",
+  "statsRejected": "Rejected",
+  "settingsTitle": "Settings",
+  "logout": "Log out"
+}

@@ -1,0 +1,71 @@
+{
+  "common": {
+    "appName": "SaasCheckin",
+    "loading": "Đang tải…",
+    "error": "Đã có lỗi xảy ra",
+    "retry": "Thử lại",
+    "cancel": "Hủy",
+    "save": "Lưu",
+    "delete": "Xoá",
+    "edit": "Sửa",
+    "back": "Quay lại",
+    "next": "Tiếp",
+    "submit": "Gửi",
+    "close": "Đóng"
+  },
+  "auth": {
+    "login": "Đăng nhập",
+    "logout": "Đăng xuất",
+    "register": "Đăng ký",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "forgotPassword": "Quên mật khẩu?",
+    "noAccount": "Chưa có tài khoản?",
+    "haveAccount": "Đã có tài khoản?"
+  },
+  "events": {
+    "title": "Sự kiện",
+    "newEvent": "Sự kiện mới",
+    "publish": "Xuất bản",
+    "cancel": "Huỷ sự kiện",
+    "sold": "Đã bán {count}/{total}",
+    "noEvents": "Chưa có sự kiện"
+  },
+  "registration": {
+    "register": "Đăng ký",
+    "fullName": "Họ và tên",
+    "email": "Email",
+    "quantity": "Số lượng",
+    "discountCode": "Mã giảm giá",
+    "selectTicketType": "Chọn loại vé",
+    "continueToPayment": "Tiếp tục thanh toán",
+    "payWith": "Thanh toán với {provider}",
+    "thankYou": "Cảm ơn bạn!",
+    "orderConfirmed": "Đăng ký của bạn đã được xác nhận"
+  },
+  "checkin": {
+    "dashboard": "Check-in trực tiếp",
+    "live": "Trực tiếp",
+    "reconnecting": "Đang kết nối lại…",
+    "checkedIn": "Đã check-in",
+    "totalRegistrations": "Tổng đăng ký",
+    "complete": "% hoàn thành",
+    "rejected": "Bị từ chối",
+    "scan": "Quét vé",
+    "manualLookup": "Hoặc tra cứu thủ công"
+  },
+  "billing": {
+    "billing": "Thanh toán",
+    "currentPlan": "Gói hiện tại",
+    "usageThisPeriod": "Sử dụng trong kỳ",
+    "availablePlans": "Các gói có sẵn",
+    "invoices": "Hoá đơn",
+    "paymentMethod": "Phương thức thanh toán",
+    "trialEnds": "Dùng thử đến {date}"
+  },
+  "settings": {
+    "audit": "Nhật ký kiểm tra",
+    "members": "Thành viên",
+    "general": "Chung"
+  }
+}

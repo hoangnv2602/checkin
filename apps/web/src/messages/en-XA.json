@@ -1,0 +1,72 @@
+{
+  "_comment": "Pseudo-locale (en-XA) — accented English for layout testing in CI. Phase 6 wires test that wraps every string with [!! XXX !!] to expose layout issues.",
+  "common": {
+    "appName": "[!! ŚâàśČĥéčķîñ !!]",
+    "loading": "[!! Łöàðîñğ… !!]",
+    "error": "[!! Śöméţĥîñğ ŵéñţ ŵŕöñğ !!]",
+    "retry": "[!! Ţŕý àğàîñ !!]",
+    "cancel": "[!! Čàñčéļ !!]",
+    "save": "[!! Śàvé !!]",
+    "delete": "[!! Ðéļéţé !!]",
+    "edit": "[!! Éðîţ !!]",
+    "back": "[!! Бàçķ !!]",
+    "next": "[!! Ńéxţ !!]",
+    "submit": "[!! Śûбмîţ !!]",
+    "close": "[!! Čļöśé !!]"
+  },
+  "auth": {
+    "login": "[!! Łöğ îñ !!]",
+    "logout": "[!! Łöğ öûţ !!]",
+    "register": "[!! Śîğñ ûþ !!]",
+    "email": "[!! Éмàîļ !!]",
+    "password": "[!! Рàśśŵöŕð !!]",
+    "forgotPassword": "[!! Ƒöŕğöţ рàśśŵöŕð? !!]",
+    "noAccount": "[!! Ðöñ'ţ ĥàvé àñ àččöûñţ? !!]",
+    "haveAccount": "[!! Àļŕéàðý ĥàvé àñ àččöûñţ? !!]"
+  },
+  "events": {
+    "title": "[!! Évéñţś !!]",
+    "newEvent": "[!! Ńéŵ évéñţ !!]",
+    "publish": "[!! Рûбļîśĥ !!]",
+    "cancel": "[!! Čàñčéļ évéñţ !!]",
+    "sold": "[!! {count} öƒ {total} śöļð !!]",
+    "noEvents": "[!! Ńö évéñţś ýéţ !!]"
+  },
+  "registration": {
+    "register": "[!! Ŕéğîśţéŕ !!]",
+    "fullName": "[!! Ƒûļļ ñàмé !!]",
+    "email": "[!! Éмàîļ !!]",
+    "quantity": "[!! Qûàñţîţý !!]",
+    "discountCode": "[!! Ðîśčöûñţ čöðé !!]",
+    "selectTicketType": "[!! Śéļéčţ à ţîçķéţ ţýрé !!]",
+    "continueToPayment": "[!! Čöñţîñûé ţö рàýméñţ !!]",
+    "payWith": "[!! Рàý ŵîţĥ {provider} !!]",
+    "thankYou": "[!! Ţĥàñķ ýöû! !!]",
+    "orderConfirmed": "[!! Ýöûŕ ŕéğîśţŕàţîöñ îś čöñƒîŕмéð !!]"
+  },
+  "checkin": {
+    "dashboard": "[!! Łîvé čĥéçķ-îñ !!]",
+    "live": "[!! Łîvé !!]",
+    "reconnecting": "[!! Ŕéčöññéčţîñğ… !!]",
+    "checkedIn": "[!! Čĥéçķéð îñ !!]",
+    "totalRegistrations": "[!! Ţöţàļ ŕéğîśţŕàţîöñś !!]",
+    "complete": "[!! % čöмрļéţé !!]",
+    "rejected": "[!! Ŕéĵéčţéð !!]",
+    "scan": "[!! Śčàñ ţîçķéţ !!]",
+    "manualLookup": "[!! Öŕ ļööķ ûр мàñûàļļý !!]"
+  },
+  "billing": {
+    "billing": "[!! Бîļļîñğ !!]",
+    "currentPlan": "[!! Čûŕŕéñţ рļàñ !!]",
+    "usageThisPeriod": "[!! Ûśàğé ţĥîś рéŕîöð !!]",
+    "availablePlans": "[!! Àváîļàбļé рļàñś !!]",
+    "invoices": "[!! Îñvöîčéś !!]",
+    "paymentMethod": "[!! Рàýméñţ мéţĥöð !!]",
+    "trialEnds": "[!! Ţŕîàļ éñðś {date} !!]"
+  },
+  "settings": {
+    "audit": "[!! Àûðîţ ļöğ !!]",
+    "members": "[!! Мéмбéŕś !!]",
+    "general": "[!! Ĝéñéŕàļ !!]"
+  }
+}

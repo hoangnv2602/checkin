@@ -1,0 +1,71 @@
+{
+  "common": {
+    "appName": "SaasCheckin",
+    "loading": "Loading…",
+    "error": "Something went wrong",
+    "retry": "Try again",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "close": "Close"
+  },
+  "auth": {
+    "login": "Log in",
+    "logout": "Log out",
+    "register": "Sign up",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?"
+  },
+  "events": {
+    "title": "Events",
+    "newEvent": "New event",
+    "publish": "Publish",
+    "cancel": "Cancel event",
+    "sold": "{count} of {total} sold",
+    "noEvents": "No events yet"
+  },
+  "registration": {
+    "register": "Register",
+    "fullName": "Full name",
+    "email": "Email",
+    "quantity": "Quantity",
+    "discountCode": "Discount code",
+    "selectTicketType": "Select a ticket type",
+    "continueToPayment": "Continue to payment",
+    "payWith": "Pay with {provider}",
+    "thankYou": "Thank you!",
+    "orderConfirmed": "Your registration is confirmed"
+  },
+  "checkin": {
+    "dashboard": "Live check-in",
+    "live": "Live",
+    "reconnecting": "Reconnecting…",
+    "checkedIn": "Checked in",
+    "totalRegistrations": "Total registrations",
+    "complete": "% complete",
+    "rejected": "Rejected",
+    "scan": "Scan ticket",
+    "manualLookup": "Or look up manually"
+  },
+  "billing": {
+    "billing": "Billing",
+    "currentPlan": "Current plan",
+    "usageThisPeriod": "Usage this period",
+    "availablePlans": "Available plans",
+    "invoices": "Invoices",
+    "paymentMethod": "Payment method",
+    "trialEnds": "Trial ends {date}"
+  },
+  "settings": {
+    "audit": "Audit log",
+    "members": "Members",
+    "general": "General"
+  }
+}
