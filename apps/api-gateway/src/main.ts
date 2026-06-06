@@ -3,12 +3,14 @@
  *
  * Phase 0: boot HTTP server + Socket.IO gateway + Swagger UI.
  * Phase 1+: gRPC client, JWT auth guard (global), BullMQ workers, cookie-parser.
+ * Phase 8 (I-801): gRPC server :50052 cho mobile clients.
  */
 import { NestFactory } from "@nestjs/core";
 import { Logger } from "nestjs-pino";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import cookieParser from "cookie-parser";
 import { AppModule } from "./app.module";
+import { grpcServerOptions } from "./modules/grpc-server/grpc-server.config";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
@@ -37,12 +39,22 @@ async function bootstrap() {
     credentials: true,
   });
 
+  // I-801: gRPC server cho mobile (port 50052 mặc định).
+  // Tắt qua GRPC_SERVER_ENABLED=false khi dev không có core-api chạy.
+  if (process.env.GRPC_SERVER_ENABLED !== "false") {
+    app.connectMicroservice(grpcServerOptions(), { inheritAppConfig: true });
+    await app.startAllMicroservices();
+  }
+
   const port = Number(process.env.PORT ?? 3001);
   await app.listen(port);
 
   const logger = app.get(Logger);
   logger.log(`API Gateway listening on http://localhost:${port}`);
   logger.log(`Swagger UI: http://localhost:${port}/v1/docs`);
+  if (process.env.GRPC_SERVER_ENABLED !== "false") {
+    logger.log(`gRPC server listening on :${process.env.GRPC_SERVER_PORT ?? 50052}`);
+  }
 }
 
 bootstrap();

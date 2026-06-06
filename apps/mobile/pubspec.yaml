@@ -22,6 +22,8 @@ dependencies:
   # Networking
   dio: ^5.7.0
   retrofit: ^4.4.1
+  grpc: ^4.0.1             # I-801: gRPC client to api-gateway :50052
+  protobuf: ^4.0.0         # I-801: proto message runtime
 
   # Local DB
   drift: ^2.21.0
