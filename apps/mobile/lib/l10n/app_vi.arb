@@ -1,0 +1,21 @@
+{
+  "@@locale": "vi",
+  "appName": "SaasCheckin",
+  "scanTitle": "Quét vé",
+  "scanSuccess": "Check-in thành công",
+  "scanDuplicate": "Đã check-in rồi",
+  "scanRejected": "Bị từ chối: {reason}",
+  "scanOffline": "Mất mạng — đã lưu để đồng bộ sau",
+  "manualLookup": "Hoặc tra cứu thủ công",
+  "emailLabel": "Email người tham dự",
+  "checkInManual": "Check-in thủ công",
+  "dashboardTitle": "Check-in trực tiếp",
+  "live": "Trực tiếp",
+  "reconnecting": "Đang kết nối lại…",
+  "statsCheckedIn": "Đã check-in",
+  "statsTotal": "Tổng đăng ký",
+  "statsPercent": "% hoàn thành",
+  "statsRejected": "Bị từ chối",
+  "settingsTitle": "Cài đặt",
+  "logout": "Đăng xuất"
+}

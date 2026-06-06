@@ -1,0 +1,13 @@
+{
+  "name": "@saas-checkin/loadtest",
+  "version": "0.0.0",
+  "private": true,
+  "description": "k6 load test for check-in scan endpoint (I-405).",
+  "scripts": {
+    "scan:1k": "BASE_URL=http://localhost:3001 k6 run tools/loadtest/checkin.js",
+    "scan:staging": "BASE_URL=https://api.staging.saas-checkin.com k6 run tools/loadtest/checkin.js"
+  },
+  "devDependencies": {
+    "k6": "*"
+  }
+}

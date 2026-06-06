@@ -1,0 +1,6 @@
+Your access code is {{ otp }}.
+
+Open your ticket:
+{{ ticketUrl }}
+
+The code expires in 5 minutes.

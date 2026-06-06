@@ -1,0 +1,179 @@
+syntax = "proto3";
+
+package saas_checkin.ticketing.v1;
+
+option csharp_namespace = "SaasCheckin.Grpc.Ticketing.V1";
+
+// TicketingService — RPC cho BFF (api-gateway) gọi sang core-api.
+//
+// Design notes:
+// - Mọi RPC đều yêu cầu `organization_id` (tenant) trong metadata để set
+//   `app.current_tenant` RLS — server enforce, không trust client.
+// - BFF nên cache quote (ApplyDiscount) per (event, code) trong Redis 5 phút.
+service TicketingService {
+  // ListTicketTypes — public; cần organization_id + event_id.
+  rpc ListTicketTypes(ListTicketTypesRequest) returns (ListTicketTypesResponse);
+
+  // GetTicketType — public; trả null nếu không tồn tại.
+  rpc GetTicketType(GetTicketTypeRequest) returns (TicketType);
+
+  // ApplyDiscount — public; trả PricingQuote với failure reason rõ ràng.
+  rpc ApplyDiscount(ApplyDiscountRequest) returns (ApplyDiscountResponse);
+
+  // CreateOrder — public; attendee submit form. Trả Order + ExpiresAt (10 phút).
+  // Sau khi tạo, BFF tạo Checkout Session ở Stripe/VNPay rồi gọi AttachProviderSession.
+  rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+
+  // AttachProviderSession — link Stripe session id / VNPay txn ref vào Order.
+  rpc AttachProviderSession(AttachProviderSessionRequest) returns (AttachProviderSessionResponse);
+
+  // MarkOrderPaid — webhook từ Stripe/VNPay gọi; chuyển Order Pending → Paid,
+  // issue N Registration, publish TicketIssuedIntegrationEvent.
+  rpc MarkOrderPaid(MarkOrderPaidRequest) returns (MarkOrderPaidResponse);
+
+  // GetOrder — query cho BFF render /register/success.
+  rpc GetOrder(GetOrderRequest) returns (Order);
+
+  // ListRegistrations — query cho /ticket/[regId] lookup + dashboard.
+  rpc ListRegistrations(ListRegistrationsRequest) returns (ListRegistrationsResponse);
+}
+
+message TicketType {
+  string id = 1;
+  string organization_id = 2;
+  string event_id = 3;
+  string name = 4;
+  string description = 5;
+  int64 price_amount_minor = 6;
+  string price_currency = 7;
+  int32 capacity = 8;
+  int32 sold_count = 9;
+  string sale_starts_at = 10;   // ISO-8601
+  string sale_ends_at = 11;
+  bool is_active = 12;
+}
+
+message ListTicketTypesRequest {
+  string organization_id = 1;
+  string event_id = 2;
+}
+
+message ListTicketTypesResponse {
+  repeated TicketType ticket_types = 1;
+}
+
+message GetTicketTypeRequest {
+  string organization_id = 1;
+  string ticket_type_id = 2;
+}
+
+message ApplyDiscountRequest {
+  string organization_id = 1;
+  string event_id = 2;
+  string ticket_type_id = 3;
+  int32 quantity = 4;
+  string discount_code = 5;
+}
+
+message ApplyDiscountResponse {
+  Money subtotal = 1;
+  Money discount = 2;
+  Money total = 3;
+  string applied_code = 4;
+  string failure_reason = 5;
+}
+
+message Money {
+  int64 amount_minor = 1;
+  string currency = 2;
+}
+
+message CreateOrderRequest {
+  string organization_id = 1;
+  string event_id = 2;
+  string ticket_type_id = 3;
+  int32 quantity = 4;
+  string buyer_email = 5;
+  string buyer_name = 6;
+  string discount_code = 7;
+  string provider = 8;            // "stripe" | "vnpay"
+}
+
+message CreateOrderResponse {
+  Order order = 1;
+}
+
+message Order {
+  string id = 1;
+  string organization_id = 2;
+  string event_id = 3;
+  string ticket_type_id = 4;
+  int32 quantity = 5;
+  string buyer_email = 6;
+  string buyer_name = 7;
+  Money subtotal = 8;
+  Money discount = 9;
+  Money total = 10;
+  string discount_code = 11;
+  string provider = 12;
+  string provider_session_id = 13;
+  string status = 14;             // "Pending" | "Paid" | "Failed" | "Refunded"
+  string created_at = 15;
+  string expires_at = 16;
+}
+
+message AttachProviderSessionRequest {
+  string organization_id = 1;
+  string order_id = 2;
+  string provider_session_id = 3;
+}
+
+message AttachProviderSessionResponse {
+  bool ok = 1;
+}
+
+message MarkOrderPaidRequest {
+  string organization_id = 1;
+  string order_id = 2;
+  string provider_session_id = 3;
+}
+
+message MarkOrderPaidResponse {
+  bool ok = 1;
+  int32 issued_registrations = 2;
+}
+
+message GetOrderRequest {
+  string organization_id = 1;
+  string order_id = 2;
+}
+
+message Registration {
+  string id = 1;
+  string organization_id = 2;
+  string event_id = 3;
+  string order_id = 4;
+  string ticket_type_id = 5;
+  string jti = 6;
+  string attendee_email = 7;
+  string attendee_name = 8;
+  string attendee_phone = 9;
+  string status = 10;             // "Active" | "CheckedIn" | "Revoked" | "Expired"
+  string issued_at = 11;
+  string expires_at = 12;
+  string checked_in_at = 13;
+  string qr_image_url = 14;
+  string signature = 15;
+}
+
+message ListRegistrationsRequest {
+  string organization_id = 1;
+  string event_id = 2;
+  string attendee_email = 3;
+  int32 skip = 4;
+  int32 take = 5;
+}
+
+message ListRegistrationsResponse {
+  repeated Registration registrations = 1;
+}

@@ -1,10 +1,17 @@
 using MediatR;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
+using SaasCheckin.Application.CheckIn.Commands;
+using SaasCheckin.Application.CheckIn.Queries;
 using SaasCheckin.Application.Common.Behaviors;
+using SaasCheckin.Application.Reggistration;
+using SaasCheckin.Domain.CheckIn;
 using SaasCheckin.Domain.Identity;
+using SaasCheckin.Domain.Registration;
 using SaasCheckin.HttpApi.Host.Grpc;
+using SaasCheckin.Infrastructure.CheckIn;
 using SaasCheckin.Infrastructure.Extensions;
+using SaasCheckin.Infrastructure.Registration;
 using SaasCheckin.Shared.Application.Extensions;
 using Scalar.AspNetCore;
 using Serilog;
@@ -38,6 +45,19 @@ builder.Services.AddSaasCheckinDbContext(builder.Configuration);
 // Identity bounded-context module (BCrypt + JWT signing)
 builder.Services.AddBoundedContextModule<IdentityModule>(builder.Configuration);
 
+// Registration bounded-context modules (I-301): Domain (PricingService) + Application (repos/handlers) + Infrastructure (Ed25519 QR).
+builder.Services.AddBoundedContextModule<SaasCheckin.Domain.Registration.RegistrationModule>(builder.Configuration);
+builder.Services.AddBoundedContextModule<SaasCheckin.Infrastructure.Registration.RegistrationInfrastructureModule>(builder.Configuration);
+builder.Services.AddRegistrationModule();
+
+// CheckIn bounded-context modules (I-401): Domain (CanCheckInSpecification) + Infrastructure (repo + Redis cache + Ed25519 verifier).
+builder.Services.AddBoundedContextModule<CheckInModule>(builder.Configuration);
+builder.Services.AddBoundedContextModule<CheckInInfrastructureModule>(builder.Configuration);
+
+// Billing bounded-context module (I-501): Subscription state machine + Plan limits.
+builder.Services.AddBoundedContextModule<BillingModule>(builder.Configuration);
+builder.Services.AddBillingApplication();
+
 // Application services (ICurrentTenant, IPermissionChecker, IIntegrationEventBus)
 builder.Services.AddSaasCheckinApplication();
 
@@ -46,7 +66,9 @@ builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssemblies(
         typeof(SaasCheckin.Domain.Identity.IdentityModule).Assembly,
-        typeof(SaasCheckin.Application.Identity.Commands.RegisterUserCommand).Assembly);
+        typeof(SaasCheckin.Application.Identity.Commands.RegisterUserCommand).Assembly,
+        typeof(SaasCheckin.Application.CheckIn.Commands.ScanQrCommand).Assembly,
+        typeof(SaasCheckin.Application.Billing.Commands.SubscribeToPlanCommand).Assembly);
     cfg.AddOpenBehavior(typeof(PermissionBehavior<,>));
     cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
 });

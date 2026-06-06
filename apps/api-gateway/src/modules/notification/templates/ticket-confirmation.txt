@@ -1,0 +1,13 @@
+Hi {{ attendeeName }},
+
+Your registration for {{ eventTitle }} is confirmed!
+
+Event starts: {{ eventStartAt }}
+Venue: {{ venue }}
+
+Your QR ticket is attached. Open the link below on your phone to display it at check-in:
+{{ ticketUrl }}
+
+Need help? Reply to this email.
+
+— The {{ orgName }} team

@@ -4,7 +4,9 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MediatR" />
+    <PackageReference Include="Stateless" />
     <ProjectReference Include="..\..\shared\Shared.Application\Shared.Application.csproj" />
     <ProjectReference Include="..\SaasCheckin.Application.Contracts\SaasCheckin.Application.Contracts.csproj" />
+    <ProjectReference Include="..\SaasCheckin.Domain\SaasCheckin.Domain.csproj" />
   </ItemGroup>
 </Project>
