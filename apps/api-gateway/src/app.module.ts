@@ -4,6 +4,7 @@ import { LoggerModule } from "nestjs-pino";
 import { HealthModule } from "./modules/health/health.module";
 import { AuthModule } from "./modules/auth/auth.module";
 import { EventsModule } from "./modules/events/events.module";
+import { RegistrationModule } from "./modules/registration/registration.module";
 import { RealtimeModule } from "./modules/realtime/realtime.module";
 import { JobsModule } from "./modules/jobs/jobs.module";
 import { CoreApiModule } from "./modules/core-api/core-api.module";
@@ -31,7 +32,8 @@ import { JwtAuthGuard } from "./modules/auth/guards/jwt-auth.guard";
     // Feature modules
     HealthModule,
     AuthModule,      // I-102: real auth (login/refresh/logout/whoami)
-    EventsModule,    // stub proxy — Phase 2
+    EventsModule,    // I-202: events (BFF → gRPC EventService)
+    RegistrationModule, // I-303: ticketing (BFF → gRPC TicketingService)
     RealtimeModule,  // Socket.IO + Redis adapter — Phase 0 init
     JobsModule,      // BullMQ init — Phase 1
     CoreApiModule,   // gRPC client tới core-api:50051 — Phase 1
