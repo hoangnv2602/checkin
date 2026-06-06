@@ -338,3 +338,49 @@ class PendingCheckIns extends Table {
 - **CI:** `melos run build:ios` → IPA, `melos run build:android` → AAB
 - **Phân phối nội bộ:** Firebase App Distribution cho Android, TestFlight cho iOS
 - **Release store:** Fastlane match cho signing, metadata store để trong `tools/store/`
+
+## gRPC vs REST (Phase 8 — I-801)
+
+Phase 8 bật gRPC cho mobile, REST cho web. Một binary, hai protocol song song.
+
+| Client | Protocol | Port | Lý do |
+|--------|----------|------|-------|
+| Mobile (Flutter) | **gRPC** (mặc định khi bật flag) | BFF `:50052` | p95 scan < 100ms (vs 200ms REST) |
+| Mobile (fallback) | REST | BFF `:3001` | Khi BFF gRPC down → auto-fallback về Dio |
+| Web (Next.js) | **REST** | BFF `:3001` | Server Components, OpenAPI auto-gen |
+| Checkin-admin | REST | BFF `:3001` | Không phải hot path |
+
+Build flags:
+
+```bash
+# Mobile production với gRPC bật
+flutter build apk --release \
+  --dart-define=USE_GRPC=true \
+  --dart-define=GRPC_HOST=api.saas-checkin.com:50052
+
+# Mobile dev (REST, không cần BFF gRPC chạy)
+flutter run --dart-define=USE_GRPC=false
+```
+
+BFF gRPC server (Phase 8):
+- Port: `50052` (env `GRPC_SERVER_PORT`)
+- Bật/tắt: `GRPC_SERVER_ENABLED=true|false` (default `true`)
+- Boot song song với HTTP qua `app.connectMicroservice()`
+- Handlers hiện tại: `CheckInService.{Scan, GetEventStats, UndoCheckIn}`
+- File: `apps/api-gateway/src/modules/grpc-server/`
+
+Mobile gRPC client:
+- File: `apps/mobile/lib/core/network/grpc/{grpc_config,checkin_grpc_client}.dart`
+- Channel: `grpc.ClientChannel` với `ChannelCredentials.secure()` cho prod, insecure cho dev
+- Metadata: `authorization: Bearer <jwt>`, `x-tenant-id: <tenantId>`
+- Marshalling: JSON over gRPC (transition) — sẽ migrate sang protobuf khi `buf generate` chạy
+- Auto-fallback: `GrpcError.unimplemented` / `unavailable` → switch sang Dio REST
+
+Source code map (I-801):
+- `apps/api-gateway/src/modules/grpc-server/grpc-server.config.ts`
+- `apps/api-gateway/src/modules/grpc-server/grpc-server.module.ts`
+- `apps/api-gateway/src/modules/grpc-server/checkin-grpc.controller.ts`
+- `apps/api-gateway/test/grpc-server.e2e-spec.ts`
+- `apps/mobile/lib/core/network/grpc/grpc_config.dart`
+- `apps/mobile/lib/core/network/grpc/checkin_grpc_client.dart`
+- `apps/mobile/lib/features/checkin/data/datasources/checkin_remote_datasource.dart` (gRPC + REST switch)

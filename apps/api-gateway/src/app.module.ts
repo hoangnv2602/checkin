@@ -8,6 +8,7 @@ import { RealtimeModule } from "./modules/realtime/realtime.module";
 import { JobsModule } from "./modules/jobs/jobs.module";
 import { CoreApiModule } from "./modules/core-api/core-api.module";
 import { GrpcModule } from "./modules/grpc/grpc.module";
+import { GrpcServerModule } from "./modules/grpc-server/grpc-server.module";
 import { RedisModule } from "./modules/_shared/redis/redis.module";
 import { JwtAuthGuard } from "./modules/auth/guards/jwt-auth.guard";
 
@@ -24,6 +25,7 @@ import { JwtAuthGuard } from "./modules/auth/guards/jwt-auth.guard";
     // Infrastructure
     RedisModule,  // ioredis client (JWT key cache, refresh tokens)
     GrpcModule,   // gRPC client tới core-api:50051
+    GrpcServerModule, // I-801: gRPC server :50052 for mobile clients
 
     // Feature modules
     HealthModule,
