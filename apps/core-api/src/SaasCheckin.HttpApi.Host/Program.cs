@@ -81,7 +81,8 @@ builder.Services.AddMediatR(cfg =>
         typeof(SaasCheckin.Application.CheckIn.Commands.ScanQrCommand).Assembly,
         typeof(SaasCheckin.Application.Billing.Commands.SubscribeToPlanCommand).Assembly,
         typeof(SaasCheckin.Application.PlatformOperations.Commands.LoginCommand).Assembly,
-        typeof(SaasCheckin.Application.EventManagement.Commands.CreateEventCommand).Assembly);
+        typeof(SaasCheckin.Application.EventManagement.Commands.CreateEventCommand).Assembly,
+        typeof(SaasCheckin.Application.Registration.Commands.CreateOrderCommand).Assembly);
     cfg.AddOpenBehavior(typeof(PermissionBehavior<,>));
     cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
 });
