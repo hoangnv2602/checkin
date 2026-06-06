@@ -144,16 +144,19 @@ export class CheckInGrpcController {
 function rawUnary<Req, Res>(method: string, body: Req, md: Metadata): Promise<Res> {
   return new Promise((resolve, reject) => {
     const client = getIdentityGrpcClient();
+    // gRPC's makeUnaryRequest callback type is `(err, res: T | undefined)` — we
+    // accept the looser type and assert at the resolve site since Res is a
+    // JSON-parsed payload and the proto stub guarantees it on the success path.
     client.makeUnaryRequest(
       method,
       (x: Buffer) => x,
       (x: Buffer) => JSON.parse(x.toString("utf8")),
       Buffer.from(JSON.stringify(body)),
       md,
-      (err: Error | null, response: Res) => {
+      ((err: Error | null, response: Res | undefined) => {
         if (err) reject(err);
-        else resolve(response);
-      },
+        else resolve(response as Res);
+      }) as never,
     );
   });
 }

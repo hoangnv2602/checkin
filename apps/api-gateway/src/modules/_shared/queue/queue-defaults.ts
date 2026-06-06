@@ -11,7 +11,7 @@
  * Apply: spread `defaultJobOptions` vào BullModule.registerQueue() options.
  *        Processor nào throw sẽ tự retry; quá 3 → rơi vào DLQ.
  */
-import type { DefaultJobOptions, QueueOptions } from "bullmq";
+import type { ConnectionOptions, DefaultJobOptions, QueueOptions } from "bullmq";
 
 export const DEFAULT_JOB_OPTIONS: DefaultJobOptions = {
   attempts: 3,
@@ -23,8 +23,12 @@ export const DEFAULT_JOB_OPTIONS: DefaultJobOptions = {
 export const DLQ_SUFFIX = ":dlx";
 export const DLQ_RETENTION_SECONDS = 7 * 24 * 3600;
 
-export function queueOptions(name: string): QueueOptions {
+export function queueOptions(
+  name: string,
+  connection: ConnectionOptions = { host: "localhost", port: 6379 },
+): QueueOptions {
   return {
+    connection,
     defaultJobOptions: DEFAULT_JOB_OPTIONS,
     // BullMQ không có DLX riêng — mình implement bằng tay: khi job fail
     // hết attempts, worker move sang queue :dlx cùng tên.

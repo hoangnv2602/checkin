@@ -9,6 +9,11 @@ import { StuckJobDetectorProcessor } from "./stuck-job-detector.processor";
 import { QueueReplayController } from "./queue-replay.controller";
 import type { Queue } from "bullmq";
 
+declare global {
+  // eslint-disable-next-line no-var
+  var __monitoredQueues: Queue<unknown>[] | undefined;
+}
+
 @Global()
 @Module({
   providers: [DlqService, QueueReplayController],
@@ -32,9 +37,9 @@ export class QueueModule implements OnApplicationBootstrap {
   /** Helper để module khác register queue cần monitor. */
   static monitorQueues(queues: Queue<unknown>[]): void {
     // Stored globally cho StuckJobDetectorProcessor (singleton).
-    if (!(globalThis as { __monitoredQueues?: Queue<unknown>[] }).__monitoredQueues) {
-      (globalThis as { __monitoredQueues?: Queue<unknown>[] }).__monitoredQueues = [];
+    if (!globalThis.__monitoredQueues) {
+      globalThis.__monitoredQueues = [];
     }
-    (globalThis as { __monitoredQueues: Queue<unknown>[] }).__monitoredQueues.push(...queues);
+    globalThis.__monitoredQueues.push(...queues);
   }
 }

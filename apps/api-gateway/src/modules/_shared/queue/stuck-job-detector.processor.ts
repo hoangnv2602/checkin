@@ -33,7 +33,7 @@ export class StuckJobDetectorProcessor {
         if (now - processedOn > STUCK_THRESHOLD_MS) {
           this.logger.warn(`stuck queue=${queue.name} job=${job.id} processedOn=${processedOn}`);
           try {
-            await job.moveToFailed({ message: "stuck-job-timeout" }, job.token ?? "stuck-detector");
+            await job.moveToFailed(new Error("stuck-job-timeout"), job.token ?? "stuck-detector");
             await this.dlq.requeue(queue.name, queue, job.id ?? "", "stuck-job-timeout", job.attemptsMade, job.data);
           } catch (err) {
             this.logger.error(`stuck handler failed queue=${queue.name} job=${job.id} err=${(err as Error).message}`);

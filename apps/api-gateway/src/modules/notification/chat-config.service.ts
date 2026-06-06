@@ -16,7 +16,7 @@
  */
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import Redis from "ioredis";
-import { REDIS } from "../../_shared/redis/redis.module";
+import { REDIS } from "../_shared/redis/redis.module";
 import type { ChatProvider } from "./adapters/chat-sender.interface";
 
 const CACHE_TTL_SECONDS = 24 * 60 * 60;

@@ -14,7 +14,7 @@
  */
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import Redis from "ioredis";
-import { REDIS } from "../../_shared/redis/redis.module";
+import { REDIS } from "../_shared/redis/redis.module";
 
 const CACHE_TTL_SECONDS = 5 * 60;
 const DEFAULT_TENANT_ID = "default"; // platform-owned demo org
