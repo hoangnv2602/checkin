@@ -6,6 +6,13 @@ namespace SaasCheckin.Domain.EventManagement;
 
 /// <summary>
 /// EventManagement bounded-context module (Phase 2, I-201).
+///
+/// Aggregate roots:
+///   - Event     (draft → published → cancelled → completed)
+///   - Session   (draft → scheduled → started → ended | cancelled)
+///   - Venue     (active → inactive | archived)
+///
+/// Repositories registered ở EntityFrameworkCore (cần DbContext).
 /// </summary>
 public sealed class EventManagementModule : IBoundedContextModule
 {
@@ -13,6 +20,6 @@ public sealed class EventManagementModule : IBoundedContextModule
 
     public void Register(IServiceCollection services, IConfiguration configuration)
     {
-        // Repositories registered ở EntityFrameworkCore (cần DbContext).
+        // Repository implementations wired in EntityFrameworkCore layer.
     }
 }
