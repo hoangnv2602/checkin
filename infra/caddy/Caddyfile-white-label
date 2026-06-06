@@ -1,0 +1,39 @@
+# infra/caddy/Caddyfile-white-label
+#
+# I-804 — Caddy on-demand TLS cho white-label custom domains.
+# Wire DNS-01 challenge qua Cloudflare module (wildcard cert khi cần).
+#
+# Mount file này thay cho Caddyfile mặc định khi bật white-label.
+
+{
+    # Cloudflare DNS module cần Caddy custom build.
+    # Build: xcaddy build --with github.com/caddy-dns/cloudflare
+    # Hoặc dùng Docker image: caddy:2-builder + plugin.
+    acme_dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+}
+
+# Wildcard cho shared domain
+*.saas-checkin.com, saas-checkin.com {
+    tls {
+        dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+    }
+    reverse_proxy api-gateway:3001
+}
+
+# White-label: mọi custom domain đều có thể request, TLS on-demand
+:443 {
+    tls {
+        # On-demand issue cert lần đầu khi có request tới domain đó.
+        # Caddy cache cert → chỉ renew.
+        on_demand
+    }
+
+    # Health probe (không cần host resolution)
+    @health path /health/*
+    handle @health {
+        reverse_proxy api-gateway:3001
+    }
+
+    # Wildcard / unknown host → vẫn proxy, BFF DomainResolver sẽ 404 nếu unknown
+    reverse_proxy api-gateway:3001
+}
