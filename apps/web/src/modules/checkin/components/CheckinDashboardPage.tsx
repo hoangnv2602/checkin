@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRealtimeDashboard } from "../hooks/useRealtimeDashboard";
 import type { EventStats, CheckInRecord } from "../types/checkin";
 import { formatTimeAgo } from "@/lib/format";
+import { CheckinLineChart, CheckinBarChart } from "./CheckinCharts";
 
 const BFF = process.env.NEXT_PUBLIC_BFF_URL ?? "http://localhost:3001";
 
@@ -52,7 +53,7 @@ export function CheckinDashboardPage({
     enabled: Boolean(organizationId),
   });
 
-  const { connected, alerts, leaderboard } = useRealtimeDashboard({
+  const { connected, alerts, leaderboard, cumulative, rolling } = useRealtimeDashboard({
     eventId,
     organizationId,
     token,
@@ -81,6 +82,20 @@ export function CheckinDashboardPage({
         <StatCard label="% complete" value={`${stats.checkInPercent.toFixed(1)}%`} />
         <StatCard label="Rejected" value={stats.rejected} accent="text-destructive" />
       </div>
+
+      <section>
+        <h2 className="text-lg font-medium text-foreground">Cumulative check-ins</h2>
+        <div className="mt-2 rounded border border-border bg-card p-4">
+          <CheckinLineChart data={cumulative} />
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-lg font-medium text-foreground">Scans / sec (last 30s)</h2>
+        <div className="mt-2 rounded border border-border bg-card p-4">
+          <CheckinBarChart data={rolling} />
+        </div>
+      </section>
 
       <section>
         <h2 className="text-lg font-medium text-foreground">Top gates</h2>
