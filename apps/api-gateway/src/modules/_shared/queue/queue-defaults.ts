@@ -30,7 +30,7 @@ export const DLQ_RETENTION_SECONDS = 7 * 24 * 3600;
 
 export function queueOptions(
   name: string,
-  connection: ConnectionOptions = { host: "localhost", port: 6379 },
+  connection: ConnectionOptions = { host: "localhost", port: 6380 },
 ): QueueOptions {
   return {
     connection,
