@@ -66,7 +66,13 @@ export class InMemoryEventSeriesStore implements IEventSeriesStore {
 export class EventSeriesService {
   private readonly logger = new Logger(EventSeriesService.name);
 
-  constructor(private readonly store: IEventSeriesStore) {}
+  // Inject the concrete InMemoryEventSeriesStore class (not the
+  // IEventSeriesStore interface) so Nest's runtime DI can resolve the
+  // token via reflect-metadata. Interfaces are erased at compile time;
+  // declaring the param as the interface would surface as `Object` to the
+  // injector and fail with UnknownDependenciesException. The interface
+  // stays in this file for documentation and test-mock purposes.
+  constructor(private readonly store: InMemoryEventSeriesStore) {}
 
   async create(tenantId: string, input: EventSeriesInput, dtStart: string): Promise<EventSeries> {
     // Input validation

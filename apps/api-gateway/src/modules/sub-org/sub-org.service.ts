@@ -12,7 +12,7 @@
  * Phase 9 hardcode: middleware check `req.user.role === 'owner'`.
  */
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, Logger, NotFoundException } from "@nestjs/common";
-import { InMemorySubOrgStore, type ISubOrgStore } from "./sub-org.store";
+import { InMemorySubOrgStore } from "./sub-org.store";
 import {
   SUBORG_MAX_DEPTH,
   SUBORG_NAME_MAX_LENGTH,
@@ -28,7 +28,14 @@ import {
 export class SubOrgService {
   private readonly logger = new Logger(SubOrgService.name);
 
-  constructor(private readonly store: ISubOrgStore) {}
+  // Inject the concrete InMemorySubOrgStore class (not the ISubOrgStore
+  // interface) so Nest's runtime DI can resolve the token via
+  // reflect-metadata. Interfaces are erased at compile time; declaring the
+  // param as the interface would surface as `Object` to the injector and
+  // fail with UnknownDependenciesException. The interface stays in
+  // sub-org.store.ts for documentation and test-mock purposes; the concrete
+  // class is what's actually on the wire.
+  constructor(private readonly store: InMemorySubOrgStore) {}
 
   async create(
     rootTenantId: string,

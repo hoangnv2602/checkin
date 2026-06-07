@@ -4,10 +4,11 @@
  * Dev fallback: write file vào /var/lib/saas-checkin/qr/{tenant}/{regId}.png
  * hoặc dùng data: URL nếu không ghi được.
  */
-import { Logger } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 
 const ROOT = process.env.LOCAL_QR_DIR ?? "/var/lib/saas-checkin/qr";
 
+@Injectable()
 export class LocalQrStorage {
   private readonly logger = new Logger(LocalQrStorage.name);
 

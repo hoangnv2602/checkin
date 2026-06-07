@@ -4,8 +4,9 @@
  * S3/MinIO upload. Pure fetch — không pull AWS SDK vào api-gateway bundle
  * (giữ image gọn). Presigned URL generation đã làm ở S3 side; ở đây chỉ PUT.
  */
-import { Logger } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 
+@Injectable()
 export class S3QrStorage {
   private readonly logger = new Logger(S3QrStorage.name);
   private readonly bucket = process.env.S3_BUCKET ?? "saas-checkin-qr";
