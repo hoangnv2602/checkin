@@ -7,6 +7,10 @@ namespace SaasCheckin.EntityFrameworkCore.Audit;
 /// audit_log — INSERT-only. RLS-enforced. Bảng này phải REVOKE UPDATE, DELETE
 /// ở runtime role `app_runtime` (chỉ cho phép INSERT). checkin-admin role
 /// (BYPASSRLS) đọc được toàn bộ qua /v1/audit endpoints.
+///
+/// I-908: hash chain integrity — `prev_hash` + `hash` columns. Mỗi row
+/// `hash = SHA256(prev_row.hash || id || tenant_id || action || actor_user_id || occurred_at)`.
+/// Verify job recompute chain, alert nếu mismatch (sign of tampering).
 /// </summary>
 public sealed class AuditLogEntityConfiguration
     : IEntityTypeConfiguration<AuditLogEntityConfiguration.AuditLogEntity>
@@ -26,6 +30,9 @@ public sealed class AuditLogEntityConfiguration
         b.Property(x => x.IpAddress).HasColumnName("ip_address").HasMaxLength(64);
         b.Property(x => x.UserAgent).HasColumnName("user_agent").HasMaxLength(500);
         b.Property(x => x.OccurredAt).HasColumnName("occurred_at").IsRequired();
+        // I-908: hash chain
+        b.Property(x => x.PrevHash).HasColumnName("prev_hash").HasMaxLength(64).IsRequired();
+        b.Property(x => x.Hash).HasColumnName("hash").HasMaxLength(64).IsRequired();
 
         b.HasIndex(x => new { x.TenantId, x.OccurredAt })
             .HasDatabaseName("IX_audit_log_tenant_id_occurred_at");
@@ -52,5 +59,9 @@ public sealed class AuditLogEntityConfiguration
         public string? IpAddress { get; set; }
         public string? UserAgent { get; set; }
         public DateTimeOffset OccurredAt { get; set; }
+        /// <summary>I-908: SHA-256 hex of previous row's hash (64 chars).</summary>
+        public string PrevHash { get; set; } = default!;
+        /// <summary>I-908: SHA-256 hex of this row's content (64 chars).</summary>
+        public string Hash { get; set; } = default!;
     }
 }
