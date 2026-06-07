@@ -2,15 +2,19 @@
 
 Submit Flutter app lên Apple App Store + Google Play. Submit **ít nhất 5 ngày làm việc trước launch target**.
 
+> **Đọc kèm:** `docs/operations/store-asset-checklist.md` (icons, screenshots, metadata),
+> `docs/legal/privacy-policy.md` (template — cần legal review trước publish),
+> `docs/legal/terms-of-service.md` (template).
+
 ## Apple App Store
 
 ### Pre-flight
 
 - [ ] Apple Developer account active ($99/year)
-- [ ] App ID registered: `com.saas-checkin.app` (hoặc custom)
+- [ ] App ID registered: `com.saas-checkin.app` (bundle ID matches `Info.plist`)
 - [ ] Provisioning profile: App Store distribution
 - [ ] Xcode 15+, iOS 16+ deployment target
-- [ ] Privacy policy URL: `https://saas-checkin.com/privacy` (host on web)
+- [ ] Privacy policy URL: `https://saas-checkin.com/privacy` (template in `docs/legal/privacy-policy.md`)
 - [ ] Support URL: `https://saas-checkin.com/support`
 - [ ] App icon: 1024x1024 PNG (no transparency, no rounded corners)
 - [ ] Screenshots: 6.7" (iPhone 15 Pro Max), 6.5", 5.5" (iPhone 8 Plus), 12.9" iPad Pro
@@ -18,6 +22,7 @@ Submit Flutter app lên Apple App Store + Google Play. Submit **ít nhất 5 ng�
 - [ ] What's new (release notes)
 - [ ] Encryption declaration (only HTTPS — exempt)
 - [ ] App Tracking Transparency (nếu dùng IDFA — không, skip)
+- [ ] Icon + screenshots meet `docs/operations/store-asset-checklist.md` requirements
 
 ### Build + submit
 
@@ -119,3 +124,43 @@ Trung bình 1-7 ngày. Strict hơn với:
 - [ ] Watch ANR rate (Android), hang rate (iOS) trong Play/App Store Console
 - [ ] Reply to user reviews trong 24h
 - [ ] Submit hotfixes nếu crash > 0.5%
+
+## Bundle ID + version
+
+- **iOS bundle ID:** `com.saas-checkin.app` (set in `ios/Runner/Info.plist` → `CFBundleIdentifier`)
+- **Android application ID:** `com.saas-checkin.app` (set in `android/app/build.gradle` → `defaultConfig.applicationId`)
+- **Version source of truth:** `apps/mobile/pubspec.yaml` → `version: MAJOR.MINOR.PATCH+BUILD` (e.g. `1.4.2+47`)
+- **Auto-injection:**
+  - iOS: `--build-name=1.4.2 --build-number=47` flags
+  - Android: read from pubspec, write to `versionName` + `versionCode` at build time
+
+## Privacy nutrition labels (iOS) + Data safety (Android)
+
+Cả hai stores yêu cầu disclosure chi tiết. Dùng data từ
+`docs/operations/store-asset-checklist.md` → "Data safety form" section.
+Re-review mỗi release (mỗi lần thêm analytics SDK / third-party service).
+
+## CI integration
+
+Recommended: Fastlane (cross-platform) cho cả iOS + Android. Setup:
+
+```bash
+# Init
+cd apps/mobile
+bundle init
+bundle add fastlane
+bundle exec fastlane init
+
+# iOS lane
+bundle exec fastlane ios beta     # → TestFlight
+bundle exec fastlane ios release  # → App Store
+
+# Android lane
+bundle exec fastlane android internal   # → Internal testing
+bundle exec fastlane android beta       # → Closed beta
+bundle exec fastlane android production # → Production rollout
+```
+
+Secrets (Apple API key, Google Play service account JSON) load từ GitHub
+Actions secrets (`APPLE_API_KEY`, `APPLE_API_ISSUER`, `GOOGLE_PLAY_JSON_KEY`).
+
