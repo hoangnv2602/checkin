@@ -11,10 +11,22 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import cookieParser from "cookie-parser";
 import { AppModule } from "./app.module";
 import { grpcServerOptions } from "./modules/grpc-server/grpc-server.config";
+import { startTracing } from "./modules/_shared/observability/otel";
+import { initSentry } from "./modules/_shared/observability/sentry";
+import { SentryExceptionFilter } from "./modules/_shared/observability/sentry.interceptor";
+
+// I-603: OpenTelemetry must be started BEFORE any other imports that should
+// be instrumented. We do it in a separate require-style import at the very top
+// of the module to give auto-instrumentation a chance to patch.
+startTracing("api-gateway");
+initSentry();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   app.useLogger(app.get(Logger));
+
+  // I-603: capture 5xx to Sentry. 4xx is expected (auth, validation).
+  app.useGlobalFilters(new SentryExceptionFilter());
 
   // Parse cookies (Phase 1: sa_access_token, sa_refresh_token cho web/mobile)
   app.use(cookieParser());

@@ -13,6 +13,7 @@ using SaasCheckin.Domain.Registration;
 using SaasCheckin.HttpApi.Host.Grpc;
 using SaasCheckin.Infrastructure.CheckIn;
 using SaasCheckin.Infrastructure.Extensions;
+using SaasCheckin.Infrastructure.Observability;
 using SaasCheckin.Infrastructure.Registration;
 using SaasCheckin.Shared.Application.Extensions;
 using Scalar.AspNetCore;
@@ -108,6 +109,22 @@ builder.Services.AddHealthChecks()
         redisConnectionString: builder.Configuration.GetConnectionString("Redis")!,
         name: "redis",
         tags: ["ready"]);
+
+// I-603: OpenTelemetry traces → OTLP (Tempo) + Sentry error capture.
+// Both are no-op khi DSN/endpoint env không set (dev mode).
+builder.Services.AddSaasCheckinTelemetry(builder.Configuration);
+
+// I-603: Sentry.AspNetCore auto-captures unhandled exceptions + integrates with OTel.
+if (!string.IsNullOrEmpty(builder.Configuration["SENTRY_DSN"]))
+{
+    builder.WebHost.UseSentry(o =>
+    {
+        o.Dsn = builder.Configuration["SENTRY_DSN"];
+        o.Environment = builder.Environment.EnvironmentName;
+        o.TracesSampleRate = 0.1;
+        o.SendDefaultPii = false;
+    });
+}
 
 var app = builder.Build();
 
