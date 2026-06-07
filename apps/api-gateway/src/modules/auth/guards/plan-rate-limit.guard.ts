@@ -26,6 +26,7 @@ import {
 } from "@nestjs/common";
 import type Redis from "ioredis";
 import { REDIS } from "../../_shared/redis/redis.module";
+import { RateLimitOverrideStore } from "../rate-limit-override/override.store";
 
 export type PlanTier = "free" | "pro" | "enterprise";
 
@@ -47,19 +48,39 @@ const PER_IP_LIMIT = 60; // unauth endpoints (login, public event page)
 export class PlanRateLimitGuard implements CanActivate, OnModuleDestroy {
   private readonly logger = new Logger(PlanRateLimitGuard.name);
 
-  constructor(@Inject(REDIS) private readonly redis: Redis) {}
+  constructor(
+    @Inject(REDIS) private readonly redis: Redis,
+    private readonly overrideStore: RateLimitOverrideStore,
+  ) {}
 
   async canActivate(ctx: ExecutionContext): Promise<boolean> {
     const req = ctx.switchToHttp().getRequest();
     const tenantId = (req.headers["x-tenant-id"] as string | undefined) ?? "";
     const userId = (req.user?.sub as string | undefined) ?? "";
     const planClaim = (req.user?.plan as PlanTier | undefined) ?? "free";
+    const method = req.method as string;
+    const path = (req.path ?? req.url ?? "").split("?")[0];
+    const endpoint = `${method} ${path}`;
 
     // Tenant identified → apply per-tenant tier
     // Unauthenticated / per-IP → fallback fixed limit
     const tier = tenantId ? TIER_LIMITS[planClaim] ?? TIER_LIMITS.free : null;
-    const limit = tier?.perMinute ?? PER_IP_LIMIT;
-    const burst = tier?.burst ?? PER_IP_LIMIT * 2;
+    let limit = tier?.perMinute ?? PER_IP_LIMIT;
+    let burst = tier?.burst ?? PER_IP_LIMIT * 2;
+
+    // I-912: per-tenant override (Enterprise only — guard enforce ở admin controller)
+    if (tenantId) {
+      const ov = await this.overrideStore.findActive(tenantId, endpoint);
+      if (ov) {
+        limit = ov.perMinute;
+        burst = ov.burst;
+        req.rateLimitSource = "override";
+      } else {
+        req.rateLimitSource = "plan";
+      }
+    } else {
+      req.rateLimitSource = "ip";
+    }
 
     const key = tenantId
       ? `rl:tenant:${tenantId}`
@@ -73,6 +94,7 @@ export class PlanRateLimitGuard implements CanActivate, OnModuleDestroy {
         res.setHeader("Retry-After", String(result.retryAfterSec));
         res.setHeader("X-RateLimit-Limit", String(limit));
         res.setHeader("X-RateLimit-Remaining", "0");
+        res.setHeader("X-RateLimit-Source", String(req.rateLimitSource ?? "plan"));
       }
       throw new HttpException(
         {
@@ -80,6 +102,7 @@ export class PlanRateLimitGuard implements CanActivate, OnModuleDestroy {
           error: "rate_limited",
           message: `Rate limit exceeded for ${tenantId ? `tenant=${tenantId}` : "IP"}`,
           limit,
+          source: req.rateLimitSource ?? "plan",
           windowSec: 60,
           retryAfterSec: result.retryAfterSec,
         },
