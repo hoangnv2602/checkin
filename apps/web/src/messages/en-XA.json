@@ -1,5 +1,5 @@
 {
-  "_comment": "Pseudo-locale (en-XA) — accented English for layout testing in CI. Phase 6 wires test that wraps every string with [!! XXX !!] to expose layout issues.",
+  "_comment": "Pseudo-locale (en-XA) — accented English for layout testing in CI. Strings wrapped with [!! ... !!] to expose layout issues (e.g. truncation, RTL, font width).",
   "common": {
     "appName": "[!! ŚâàśČĥéčķîñ !!]",
     "loading": "[!! Łöàðîñğ… !!]",
@@ -68,5 +68,38 @@
     "audit": "[!! Àûðîţ ļöğ !!]",
     "members": "[!! Мéмбéŕś !!]",
     "general": "[!! Ĝéñéŕàļ !!]"
+  },
+  "analytics": {
+    "title": "[!! Évéñţ àñàļýţîčś !!]",
+    "exportCsv": "[!! Éxрöŕţ ČŚV !!]",
+    "totalRegistered": "[!! Ţöţàļ ŕéğîśţéŕéð !!]",
+    "checkedIn": "[!! Čĥéçķéð îñ !!]",
+    "noShow": "[!! Ńö-śĥöŵ !!]",
+    "peakGate": "[!! Рéàķ ĝàţé !!]",
+    "timeToCheckIn": "[!! Ţîмé ţö čĥéçķ-îñ !!]",
+    "avg": "[!! Àvğ !!]",
+    "p50": "[!! p50 !!]",
+    "p95": "[!! p95 !!]",
+    "cohortByTicketType": "[!! Čöĥöŕţ бý ţîçķéţ ţýрé !!]",
+    "ticketType": "[!! Ţîçķéţ ţýрé !!]",
+    "registered": "[!! Ŕéğîśţéŕéð !!]",
+    "attended": "[!! Àţţéñðéð !!]",
+    "attendance": "[!! Àţţéñðàñčé !!]"
+  },
+  "audit": {
+    "title": "[!! Àûðîţ ļöğ !!]",
+    "ownerOnly": "[!! Ţĥîś рàğé îś öñļý àváîļàбļé ţö öŕğàñîżàţîöñ öŵñéŕś àñð àðмîñś. !!]",
+    "noEntries": "[!! Ńö éñţŕîéś мàţčĥ ţĥéśé ƒîļţéŕś !!]",
+    "actor": "[!! Àčţöŕ !!]",
+    "action": "[!! Àčţîöñ !!]",
+    "entity": "[!! Éñţîţý !!]",
+    "ip": "[!! ÎР !!]",
+    "when": "[!! Ŵĥéñ !!]",
+    "actorFilter": "[!! Àčţöŕ ûśéŕ îð !!]",
+    "actionFilter": "[!! Àčţîöñ !!]",
+    "fromFilter": "[!! Ƒŕöм !!]",
+    "toFilter": "[!! Ţö !!]",
+    "apply": "[!! Àррļý !!]",
+    "reset": "[!! Ŕéśéţ !!]"
   }
 }

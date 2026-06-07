@@ -67,5 +67,38 @@
     "audit": "Nhật ký kiểm tra",
     "members": "Thành viên",
     "general": "Chung"
+  },
+  "analytics": {
+    "title": "Phân tích sự kiện",
+    "exportCsv": "Xuất CSV",
+    "totalRegistered": "Tổng đăng ký",
+    "checkedIn": "Đã check-in",
+    "noShow": "Vắng mặt",
+    "peakGate": "Cổng cao điểm",
+    "timeToCheckIn": "Thời gian check-in",
+    "avg": "Trung bình",
+    "p50": "p50",
+    "p95": "p95",
+    "cohortByTicketType": "Phân nhóm theo loại vé",
+    "ticketType": "Loại vé",
+    "registered": "Đăng ký",
+    "attended": "Tham dự",
+    "attendance": "Tỉ lệ tham dự"
+  },
+  "audit": {
+    "title": "Nhật ký kiểm tra",
+    "ownerOnly": "Trang này chỉ dành cho chủ sở hữu và quản trị viên tổ chức.",
+    "noEntries": "Không có mục nào khớp với bộ lọc",
+    "actor": "Người thực hiện",
+    "action": "Hành động",
+    "entity": "Đối tượng",
+    "ip": "IP",
+    "when": "Thời điểm",
+    "actorFilter": "ID người dùng",
+    "actionFilter": "Hành động",
+    "fromFilter": "Từ ngày",
+    "toFilter": "Đến ngày",
+    "apply": "Áp dụng",
+    "reset": "Đặt lại"
   }
 }

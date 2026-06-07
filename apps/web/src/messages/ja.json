@@ -67,5 +67,38 @@
     "audit": "監査ログ",
     "members": "メンバー",
     "general": "一般"
+  },
+  "analytics": {
+    "title": "イベント分析",
+    "exportCsv": "CSVエクスポート",
+    "totalRegistered": "総登録",
+    "checkedIn": "チェックイン済み",
+    "noShow": "不参加",
+    "peakGate": "ピークゲート",
+    "timeToCheckIn": "チェックイン時間",
+    "avg": "平均",
+    "p50": "p50",
+    "p95": "p95",
+    "cohortByTicketType": "券種別コホート",
+    "ticketType": "券種",
+    "registered": "登録",
+    "attended": "参加",
+    "attendance": "参加率"
+  },
+  "audit": {
+    "title": "監査ログ",
+    "ownerOnly": "このページは組織のオーナーと管理者のみが利用できます。",
+    "noEntries": "フィルターに一致するエントリがありません",
+    "actor": "実行者",
+    "action": "アクション",
+    "entity": "エンティティ",
+    "ip": "IP",
+    "when": "日時",
+    "actorFilter": "ユーザーID",
+    "actionFilter": "アクション",
+    "fromFilter": "開始日",
+    "toFilter": "終了日",
+    "apply": "適用",
+    "reset": "リセット"
   }
 }

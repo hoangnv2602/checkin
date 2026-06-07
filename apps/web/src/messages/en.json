@@ -67,5 +67,38 @@
     "audit": "Audit log",
     "members": "Members",
     "general": "General"
+  },
+  "analytics": {
+    "title": "Event analytics",
+    "exportCsv": "Export CSV",
+    "totalRegistered": "Total registered",
+    "checkedIn": "Checked in",
+    "noShow": "No-show",
+    "peakGate": "Peak gate",
+    "timeToCheckIn": "Time to check-in",
+    "avg": "Avg",
+    "p50": "p50",
+    "p95": "p95",
+    "cohortByTicketType": "Cohort by ticket type",
+    "ticketType": "Ticket type",
+    "registered": "Registered",
+    "attended": "Attended",
+    "attendance": "Attendance"
+  },
+  "audit": {
+    "title": "Audit log",
+    "ownerOnly": "This page is only available to organization owners and admins.",
+    "noEntries": "No entries match these filters",
+    "actor": "Actor",
+    "action": "Action",
+    "entity": "Entity",
+    "ip": "IP",
+    "when": "When",
+    "actorFilter": "Actor user id",
+    "actionFilter": "Action",
+    "fromFilter": "From",
+    "toFilter": "To",
+    "apply": "Apply",
+    "reset": "Reset"
   }
 }
