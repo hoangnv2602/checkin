@@ -2,44 +2,40 @@
  * apps/api-gateway/src/modules/_shared/queue/queue.module.ts
  *
  * I-806 — Shared queue module: DLQ service, stuck detector, replay controller.
+ *
+ * Exports DlqService + injectable token `MONITORED_QUEUES`. Feature modules
+ * register queues via `QueueModule.register(queue)` từ constructor để
+ * StuckJobDetector sweep tất cả active queue mỗi phút.
  */
 import { Global, Module, type OnApplicationBootstrap } from "@nestjs/common";
 import { DlqService } from "./dlq.service";
 import { StuckJobDetectorProcessor } from "./stuck-job-detector.processor";
 import { QueueReplayController } from "./queue-replay.controller";
+import { ScheduleModule } from "@nestjs/schedule";
 import type { Queue } from "bullmq";
 
-declare global {
-  // eslint-disable-next-line no-var
-  var __monitoredQueues: Queue<unknown>[] | undefined;
-}
+export const MONITORED_QUEUES = "MONITORED_QUEUES";
 
 @Global()
 @Module({
-  providers: [DlqService, QueueReplayController],
-  exports: [DlqService],
+  imports: [ScheduleModule.forRoot()],
+  providers: [
+    DlqService,
+    {
+      provide: MONITORED_QUEUES,
+      useFactory: (): Queue<unknown>[] => [],
+    },
+    StuckJobDetectorProcessor,
+    QueueReplayController,
+  ],
+  controllers: [QueueReplayController],
+  exports: [DlqService, MONITORED_QUEUES],
 })
 export class QueueModule implements OnApplicationBootstrap {
-  constructor(
-    private readonly dlq: DlqService,
-    private readonly replayController: QueueReplayController,
-  ) {}
+  constructor() {}
 
-  /**
-   * Bootstrap: discover registered queues, instantiate stuck-job detector.
-   * Phase 9+ sẽ wire tự động từ @nestjs/bullmq ModuleRef.
-   */
   onApplicationBootstrap(): void {
-    // Queues hiện tại được khai báo qua BullModule.registerQueue trong
-    // từng feature module. Phase 9 sẽ quét qua ModuleRef.find() để auto-register.
-  }
-
-  /** Helper để module khác register queue cần monitor. */
-  static monitorQueues(queues: Queue<unknown>[]): void {
-    // Stored globally cho StuckJobDetectorProcessor (singleton).
-    if (!globalThis.__monitoredQueues) {
-      globalThis.__monitoredQueues = [];
-    }
-    globalThis.__monitoredQueues.push(...queues);
+    // No-op: queues self-register qua QueueModule.register() trong feature
+    // module constructor (typed for clarity).
   }
 }

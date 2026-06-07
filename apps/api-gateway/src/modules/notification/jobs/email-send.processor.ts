@@ -1,14 +1,17 @@
 /**
  * apps/api-gateway/src/modules/notification/jobs/email-send.processor.ts
  *
- * I-305 — BullMQ processor for email:send queue. Retry 3x với exponential
- * backoff, sau đó dead-letter (BullMQ native).
+ * I-305 + I-806 — BullMQ processor for email:send queue. Retry 3x với
+ * exponential backoff, sau đó auto-promote sang DLQ (queue_dlx) qua
+ * BaseDlqProcessor.onFailed().
  */
-import { Processor, WorkerHost } from "@nestjs/bullmq";
-import { Logger } from "@nestjs/common";
+import { InjectQueue } from "@nestjs/bullmq";
+import { Queue } from "bullmq";
 import { Job } from "bullmq";
 import { ResendAdapter } from "../adapters/resend.adapter";
 import { EMAIL_SEND_QUEUE } from "../email-notifier.service";
+import { BaseDlqProcessor } from "../../_shared/queue/base-dlq-processor";
+import { DlqService } from "../../_shared/queue/dlq.service";
 
 interface EmailJob {
   to: string;
@@ -20,11 +23,13 @@ interface EmailJob {
 }
 
 @Processor(EMAIL_SEND_QUEUE)
-export class EmailSendProcessor extends WorkerHost {
-  private readonly logger = new Logger(EmailSendProcessor.name);
-
-  constructor(private readonly resend: ResendAdapter) {
-    super();
+export class EmailSendProcessor extends BaseDlqProcessor<EmailJob, { messageId: string }> {
+  constructor(
+    private readonly resend: ResendAdapter,
+    dlq: DlqService,
+    @InjectQueue(EMAIL_SEND_QUEUE) queue: Queue<EmailJob>,
+  ) {
+    super(dlq, queue);
   }
 
   async process(job: Job<EmailJob>): Promise<{ messageId: string }> {

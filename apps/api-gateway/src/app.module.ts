@@ -16,6 +16,7 @@ import { SubscriptionModule } from "./modules/billing/subscription/subscription.
 import { AnalyticsModule } from "./modules/analytics/analytics.module";
 import { AuditModule } from "./modules/audit/audit.module";
 import { OnboardingModule } from "./modules/onboarding/onboarding.module";
+import { QueueModule } from "./modules/_shared/queue/queue.module";
 import { JwtAuthGuard } from "./modules/auth/guards/jwt-auth.guard";
 
 @Module({
@@ -46,6 +47,7 @@ import { JwtAuthGuard } from "./modules/auth/guards/jwt-auth.guard";
     AnalyticsModule,    // I-601: event stats report + CSV export
     AuditModule,        // I-602: audit log viewer (Owner only)
     OnboardingModule,   // I-703: 5-step wizard state (Redis-backed, 90-day TTL)
+    QueueModule,        // I-806: DLQ + stuck-job detector + queue depth metrics
   ],
   providers: [
     // Global JWT guard — opt-out via @Public() decorator
