@@ -1,0 +1,116 @@
+# .github/workflows/trivy.yml
+#
+# I-701 — Container image security scan. Trivy scan tất cả Docker image
+# trong monorepo (web, api-gateway, core-api) sau mỗi build. Fail CI nếu
+# CRITICAL/HIGH CVE xuất hiện.
+#
+# Trigger:
+#   - push to main / develop
+#   - PR to main
+#   - weekly schedule (Monday 06:00 UTC)
+#
+# Requires: Docker images build sẵn (workflow build-images.yml chạy trước).
+# Nếu chỉ cần scan source, dùng `trivy fs` (chạy local: `trivy fs .`).
+name: trivy
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Chạy weekly — phát hiện CVE mới giữa các release
+    - cron: "0 6 * * 1"
+
+permissions:
+  contents: read
+  security-events: write # upload SARIF to GitHub Security tab
+
+jobs:
+  trivy-fs:
+    name: Trivy filesystem scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Trivy fs (CRITICAL+HIGH only)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          severity: CRITICAL,HIGH
+          exit-code: "1" # fail job nếu còn finding
+          ignore-unfixed: true
+          format: sarif
+          output: trivy-fs.sarif
+      - name: Upload SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-fs.sarif
+          category: trivy-fs
+
+  trivy-image-web:
+    name: Trivy image scan (web)
+    runs-on: ubuntu-latest
+    needs: trivy-fs
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build web image (no push)
+        run: docker build -t ghcr.io/saas-checkin/web:scan apps/web
+      - name: Trivy image scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ghcr.io/saas-checkin/web:scan
+          severity: CRITICAL,HIGH
+          exit-code: "1"
+          ignore-unfixed: true
+          format: sarif
+          output: trivy-web.sarif
+      - name: Upload SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: trivy-web.sarif
+          category: trivy-web
+
+  trivy-image-gateway:
+    name: Trivy image scan (api-gateway)
+    runs-on: ubuntu-latest
+    needs: trivy-fs
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t ghcr.io/saas-checkin/api-gateway:scan apps/api-gateway
+      - uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ghcr.io/saas-checkin/api-gateway:scan
+          severity: CRITICAL,HIGH
+          exit-code: "1"
+          ignore-unfixed: true
+          format: sarif
+          output: trivy-gw.sarif
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-gw.sarif
+          category: trivy-gateway
+
+  trivy-image-core-api:
+    name: Trivy image scan (core-api)
+    runs-on: ubuntu-latest
+    needs: trivy-fs
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t ghcr.io/saas-checkin/core-api:scan apps/core-api/src/SaasCheckin.HttpApi.Host
+      - uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ghcr.io/saas-checkin/core-api:scan
+          severity: CRITICAL,HIGH
+          exit-code: "1"
+          ignore-unfixed: true
+          format: sarif
+          output: trivy-core.sarif
+      - uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-core.sarif
+          category: trivy-core
