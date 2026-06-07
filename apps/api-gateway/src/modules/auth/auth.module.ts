@@ -12,9 +12,11 @@ import { AuthController } from "./auth.controller";
 import { AuthService } from "./services/auth.service";
 import { JwtVerifierService } from "./services/jwt-verifier.service";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
+import { TrialModule } from "../billing/trial/trial.module";
 
 @Global()
 @Module({
+  imports: [TrialModule],
   controllers: [AuthController],
   providers: [AuthService, JwtVerifierService, JwtAuthGuard],
   exports: [JwtAuthGuard, JwtVerifierService, AuthService],

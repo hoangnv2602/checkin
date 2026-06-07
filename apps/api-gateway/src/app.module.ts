@@ -12,6 +12,7 @@ import { GrpcModule } from "./modules/grpc/grpc.module";
 import { GrpcServerModule } from "./modules/grpc-server/grpc-server.module";
 import { RedisModule } from "./modules/_shared/redis/redis.module";
 import { CheckinAdminAuthModule } from "./modules/checkin-admin/admin-auth.module";
+import { SubscriptionModule } from "./modules/billing/subscription/subscription.module";
 import { JwtAuthGuard } from "./modules/auth/guards/jwt-auth.guard";
 
 @Module({
@@ -38,6 +39,7 @@ import { JwtAuthGuard } from "./modules/auth/guards/jwt-auth.guard";
     JobsModule,      // BullMQ init — Phase 1
     CoreApiModule,   // gRPC client tới core-api:50051 — Phase 1
     CheckinAdminAuthModule, // I-107: platform admin auth (POST /v1/admin/auth/*)
+    SubscriptionModule, // I-501: subscription management + Stripe sub webhook
   ],
   providers: [
     // Global JWT guard — opt-out via @Public() decorator

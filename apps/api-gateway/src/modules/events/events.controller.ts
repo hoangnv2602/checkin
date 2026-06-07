@@ -22,6 +22,7 @@ import {
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import type { VerifiedAuth } from "../auth/services/jwt-verifier.service";
+import { PlanLimit } from "../billing/plan-limits/plan-limit.guard";
 import { CreateEventDto, ListEventsQueryDto, UpdateEventDto } from "./dto/events.dto";
 import { CreateVenueDto, ListVenuesQueryDto } from "./dto/venues.dto";
 import { EventsService, type EventDto, type VenueDto, type SessionDto } from "./events.service";
@@ -55,6 +56,7 @@ export class EventsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @PlanLimit("ActiveEvents")
   @ApiOperation({ summary: "Create a new draft event" })
   async create(
     @CurrentUser() user: VerifiedAuth,

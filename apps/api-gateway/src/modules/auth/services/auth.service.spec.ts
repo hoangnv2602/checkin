@@ -6,13 +6,16 @@
 import { UnauthorizedException } from "@nestjs/common";
 import { beforeEach, describe, expect, it, vi, afterEach } from "vitest";
 import { AuthService } from "./auth.service";
+import { TrialProvisioner } from "../../billing/trial/trial-provisioner.service";
 
 describe("AuthService", () => {
   let service: AuthService;
   let fetchSpy: ReturnType<typeof vi.spyOn>;
+  let trialMock: { provisionTrial: ReturnType<typeof vi.fn> };
 
   beforeEach(() => {
-    service = new AuthService();
+    trialMock = { provisionTrial: vi.fn().mockResolvedValue({ subscriptionId: "s", trialEndsAt: "x" }) };
+    service = new AuthService(trialMock as unknown as TrialProvisioner);
     fetchSpy = vi.spyOn(globalThis, "fetch" as any);
   });
 

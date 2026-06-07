@@ -16,8 +16,10 @@
  *  - GET  /v1/identity/users/{userId}
  */
 import { Injectable, Logger, UnauthorizedException } from "@nestjs/common";
+import { TrialProvisioner } from "../../billing/trial/trial-provisioner.service";
 
 const CORE_API_BASE = process.env.CORE_API_BASE ?? "http://localhost:5050";
+const PRO_PLAN_ID = process.env.PRO_PLAN_ID ?? "";
 
 interface SignInResponse {
   userId: string;
@@ -89,6 +91,8 @@ async function getJson<T>(path: string, tenantId?: string): Promise<T> {
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
+  constructor(private readonly trial: TrialProvisioner) {}
+
   async login(email: string, password: string): Promise<SignInResponse> {
     return postJson<SignInResponse>("/v1/identity/login", { email, password });
   }
@@ -108,12 +112,25 @@ export class AuthService {
     organizationName: string;
     organizationSlug: string;
   }): Promise<RegisterResponse> {
-    return postJson<RegisterResponse>("/v1/identity/register", {
+    const result = await postJson<RegisterResponse>("/v1/identity/register", {
       ...input,
       defaultLocale: "vi",
       defaultCurrency: "VND",
       timezone: "Asia/Ho_Chi_Minh",
     });
+    // I-504: auto-provision 14-day Pro trial ngay sau khi org tạo xong.
+    // Best-effort: nếu fail, vẫn return user có thể dùng Free tier.
+    if (PRO_PLAN_ID && result.organizationId) {
+      try {
+        await this.trial.provisionTrial({
+          organizationId: result.organizationId,
+          proPlanId: PRO_PLAN_ID,
+        });
+      } catch (err) {
+        this.logger.warn(`trial provision failed for org=${result.organizationId}: ${err instanceof Error ? err.message : err}`);
+      }
+    }
+    return result;
   }
 
   async getUser(userId: string, tenantId?: string): Promise<GetUserResponse> {
