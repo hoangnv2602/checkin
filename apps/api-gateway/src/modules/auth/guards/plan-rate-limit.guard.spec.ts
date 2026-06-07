@@ -97,10 +97,12 @@ function makeCtx(req: MockRequest): {
 describe("PlanRateLimitGuard", () => {
   let redis: FakeZSet;
   let guard: PlanRateLimitGuard;
+  let overrideStore: { findActive: (t: string, e: string) => Promise<{ perMinute: number; burst: number } | null> };
 
   beforeEach(() => {
     redis = new FakeZSet();
-    guard = new PlanRateLimitGuard(redis as unknown as Redis);
+    overrideStore = { findActive: async () => null };
+    guard = new PlanRateLimitGuard(redis as unknown as Redis, overrideStore as never);
   });
 
   it("allows first request from free tier tenant", async () => {
