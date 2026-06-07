@@ -15,6 +15,7 @@ import { CheckinAdminAuthModule } from "./modules/checkin-admin/admin-auth.modul
 import { SubscriptionModule } from "./modules/billing/subscription/subscription.module";
 import { AnalyticsModule } from "./modules/analytics/analytics.module";
 import { AuditModule } from "./modules/audit/audit.module";
+import { OnboardingModule } from "./modules/onboarding/onboarding.module";
 import { JwtAuthGuard } from "./modules/auth/guards/jwt-auth.guard";
 
 @Module({
@@ -44,6 +45,7 @@ import { JwtAuthGuard } from "./modules/auth/guards/jwt-auth.guard";
     SubscriptionModule, // I-501: subscription management + Stripe sub webhook
     AnalyticsModule,    // I-601: event stats report + CSV export
     AuditModule,        // I-602: audit log viewer (Owner only)
+    OnboardingModule,   // I-703: 5-step wizard state (Redis-backed, 90-day TTL)
   ],
   providers: [
     // Global JWT guard — opt-out via @Public() decorator

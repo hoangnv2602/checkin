@@ -100,5 +100,53 @@
     "toFilter": "終了日",
     "apply": "適用",
     "reset": "リセット"
+  },
+  "onboarding": {
+    "title": "SaasCheckin へようこそ",
+    "subtitle": "5 ステップで最初のイベントを公開しましょう。スキップして後から戻ることができます。",
+    "step": "ステップ {current} / {total}",
+    "skip": "後で",
+    "complete": "設定完了",
+    "completeBody": "イベントが公開され、スタッフに招待が送信されました。ダッシュボードでライブチェックインを確認できます。",
+    "goToDashboard": "ダッシュボードへ",
+    "steps": {
+      "confirmEmail": "メール確認",
+      "createEvent": "最初のイベント作成",
+      "addStaff": "スタッフ追加",
+      "publish": "公開",
+      "share": "リンク共有"
+    },
+    "step1": {
+      "title": "メールアドレスを確認",
+      "body": "確認リンクをメールでお送りしました。クリックして続行してください。",
+      "cta": "確認しました"
+    },
+    "step2": {
+      "title": "最初のイベントを作成",
+      "body": "カンファレンス テンプレートから始めます — 後で編集できます。",
+      "nameLabel": "イベント名",
+      "venueLabel": "会場",
+      "cta": "イベント作成"
+    },
+    "step3": {
+      "title": "スタッフを招待",
+      "body": "ゲートでチケットをスキャンするスタッフを追加します。招待メールが届きます。",
+      "emailPlaceholder": "staff@example.com",
+      "addAnother": "+ 追加",
+      "cta": "招待を送信"
+    },
+    "step4": {
+      "title": "イベントを公開",
+      "body": "参加者が登録できるようイベントを公開します。",
+      "cta": "今すぐ公開"
+    },
+    "step5": {
+      "title": "イベントを共有",
+      "body": "この URL をコピーして参加者と共有してください。",
+      "copy": "コピー",
+      "cta": "完了"
+    },
+    "allSet": "準備完了",
+    "summary": "イベント {eventId} を公開しました。{staffCount} 名のスタッフを招待しました。"
   }
 }

@@ -100,5 +100,53 @@
     "toFilter": "Đến ngày",
     "apply": "Áp dụng",
     "reset": "Đặt lại"
+  },
+  "onboarding": {
+    "title": "Chào mừng đến SaasCheckin",
+    "subtitle": "Hãy đưa sự kiện đầu tiên của bạn lên sóng trong 5 bước. Có thể bỏ qua và quay lại sau.",
+    "step": "Bước {current} / {total}",
+    "skip": "Bỏ qua",
+    "complete": "Hoàn tất thiết lập",
+    "completeBody": "Sự kiện đã xuất bản và nhân viên đã được mời. Vào bảng điều khiển để xem thống kê check-in trực tiếp.",
+    "goToDashboard": "Đi đến bảng điều khiển",
+    "steps": {
+      "confirmEmail": "Xác nhận email",
+      "createEvent": "Tạo sự kiện đầu tiên",
+      "addStaff": "Thêm nhân viên",
+      "publish": "Xuất bản",
+      "share": "Chia sẻ liên kết"
+    },
+    "step1": {
+      "title": "Xác nhận email của bạn",
+      "body": "Chúng tôi đã gửi liên kết xác nhận đến hộp thư của bạn. Nhấp vào đó để tiếp tục.",
+      "cta": "Tôi đã xác nhận"
+    },
+    "step2": {
+      "title": "Tạo sự kiện đầu tiên",
+      "body": "Bắt đầu với mẫu Hội nghị — có thể chỉnh sửa sau.",
+      "nameLabel": "Tên sự kiện",
+      "venueLabel": "Địa điểm",
+      "cta": "Tạo sự kiện"
+    },
+    "step3": {
+      "title": "Mời nhân viên",
+      "body": "Thêm nhân viên cổng để quét vé. Họ sẽ nhận email mời.",
+      "emailPlaceholder": "staff@example.com",
+      "addAnother": "+ Thêm người khác",
+      "cta": "Gửi lời mời"
+    },
+    "step4": {
+      "title": "Xuất bản sự kiện",
+      "body": "Đưa sự kiện lên sóng để người tham dự có thể đăng ký.",
+      "cta": "Xuất bản ngay"
+    },
+    "step5": {
+      "title": "Chia sẻ sự kiện",
+      "body": "Sao chép URL này để chia sẻ với người tham dự.",
+      "copy": "Sao chép",
+      "cta": "Hoàn tất"
+    },
+    "allSet": "Bạn đã sẵn sàng",
+    "summary": "Sự kiện {eventId} đã xuất bản. Đã mời {staffCount} nhân viên."
   }
 }

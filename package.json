@@ -21,8 +21,8 @@
     "clean": "turbo run clean && rm -rf node_modules .turbo"
   },
   "devDependencies": {
-    "turbo": "2.3.3",
     "prettier": "3.4.2",
+    "turbo": "2.3.3",
     "typescript": "5.7.2"
   },
   "pnpm": {
@@ -43,5 +43,8 @@
       "@nestjs/platform-express": "11.1.24",
       "@nestjs/websockets": "11.1.24"
     }
+  },
+  "dependencies": {
+    "vite": "6"
   }
 }

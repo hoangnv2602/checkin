@@ -100,5 +100,53 @@
     "toFilter": "To",
     "apply": "Apply",
     "reset": "Reset"
+  },
+  "onboarding": {
+    "title": "Welcome to SaasCheckin",
+    "subtitle": "Let's get your first event live in 5 steps. You can skip and come back later.",
+    "step": "Step {current} of {total}",
+    "skip": "Skip for now",
+    "complete": "Setup complete",
+    "completeBody": "Your event is published and your staff are invited. Head to the dashboard to see live check-in stats.",
+    "goToDashboard": "Go to dashboard",
+    "steps": {
+      "confirmEmail": "Confirm email",
+      "createEvent": "Create first event",
+      "addStaff": "Add staff",
+      "publish": "Publish",
+      "share": "Share link"
+    },
+    "step1": {
+      "title": "Confirm your email",
+      "body": "We sent a verification link to your inbox. Click it to continue.",
+      "cta": "I've confirmed"
+    },
+    "step2": {
+      "title": "Create your first event",
+      "body": "Start with a Conference template — fully editable later.",
+      "nameLabel": "Event name",
+      "venueLabel": "Venue",
+      "cta": "Create event"
+    },
+    "step3": {
+      "title": "Invite staff",
+      "body": "Add gate staff who will scan tickets. They'll receive an invite email.",
+      "emailPlaceholder": "staff@example.com",
+      "addAnother": "+ Add another",
+      "cta": "Send invites"
+    },
+    "step4": {
+      "title": "Publish event",
+      "body": "Make your event live so attendees can register.",
+      "cta": "Publish now"
+    },
+    "step5": {
+      "title": "Share your event",
+      "body": "Copy this URL to share with attendees.",
+      "copy": "Copy",
+      "cta": "Finish setup"
+    },
+    "allSet": "You're all set",
+    "summary": "Event {eventId} is published. {staffCount} staff invited."
   }
 }
