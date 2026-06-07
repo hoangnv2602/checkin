@@ -122,10 +122,18 @@ export class EventCheckinGateway implements OnGatewayConnection, OnGatewayDiscon
     organizationId: string;
     eventId: string;
     count: number;
+    totalRegistered?: number;
+    checkInPercent?: number;
   }): Promise<void> {
     if (!this.throttler.shouldEmit(input.eventId)) return;
     const ns = this.server.of(this.namespaceFor(input.eventId));
-    ns.to(this.dashboardRoom(input.eventId)).emit("StatsUpdated", { count: input.count });
+    ns.to(this.dashboardRoom(input.eventId)).emit("StatsUpdated", {
+      eventId: input.eventId,
+      count: input.count,
+      totalRegistered: input.totalRegistered ?? null,
+      checkInPercent: input.checkInPercent ?? null,
+      at: new Date().toISOString(),
+    });
   }
 
   private async authenticate(socket: Socket): Promise<SocketData> {

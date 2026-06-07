@@ -39,6 +39,11 @@ async function bootstrap() {
     credentials: true,
   });
 
+  // I-402: Redis adapter cho Socket.IO (cross-instance fanout).
+  // Phải chạy trước app.listen() để IoAdapter dùng Redis pub/sub.
+  const { RedisIoAdapter } = await import("./modules/realtime/redis-io-adapter");
+  app.useWebSocketAdapter(new RedisIoAdapter(app));
+
   // I-801: gRPC server cho mobile (port 50052 mặc định).
   // Tắt qua GRPC_SERVER_ENABLED=false khi dev không có core-api chạy.
   if (process.env.GRPC_SERVER_ENABLED !== "false") {
