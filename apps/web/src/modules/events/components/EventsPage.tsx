@@ -2,6 +2,7 @@
  * apps/web/src/modules/events/components/EventsPage.tsx
  *
  * Composed page-level component for /[orgSlug]/events list view.
+ * I-605 polish: EmptyState, SkeletonTable, ErrorBoundary fallback.
  */
 "use client";
 
@@ -9,6 +10,7 @@ import { useState } from "react";
 import { useEventsList, usePublishEvent, useCancelEvent, useCompleteEvent } from "../hooks/useEvents";
 import { EventListItem } from "./EventListItem";
 import { Button } from "@/components/ui/button";
+import { EmptyState, SkeletonTable } from "@/modules/_shared/ui";
 
 interface EventsPageProps {
   orgSlug: string;
@@ -16,7 +18,7 @@ interface EventsPageProps {
 
 export function EventsPage({ orgSlug }: EventsPageProps) {
   const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
-  const { data, isLoading, error } = useEventsList({ status: statusFilter });
+  const { data, isLoading, error, refetch } = useEventsList({ status: statusFilter });
   const publishMutation = usePublishEvent();
   const cancelMutation = useCancelEvent();
   const completeMutation = useCompleteEvent();
@@ -33,7 +35,7 @@ export function EventsPage({ orgSlug }: EventsPageProps) {
         </Button>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {["draft", "published", "cancelled", "completed"].map((s) => (
           <Button
             key={s}
@@ -46,10 +48,28 @@ export function EventsPage({ orgSlug }: EventsPageProps) {
         ))}
       </div>
 
-      {isLoading && <p className="text-sm text-muted-foreground">Đang tải…</p>}
-      {error && <p className="text-sm text-destructive">Lỗi: {String(error)}</p>}
-      {data && data.length === 0 && (
-        <p className="text-sm text-muted-foreground">Chưa có sự kiện nào.</p>
+      {isLoading && <SkeletonTable rows={4} cols={3} />}
+      {error && (
+        <div className="rounded border border-destructive/30 bg-destructive/10 p-4 text-sm">
+          <p className="text-destructive">Lỗi: {String(error)}</p>
+          <button
+            onClick={() => refetch()}
+            className="mt-2 rounded bg-primary px-3 py-1 text-xs font-medium text-primary-foreground"
+          >
+            Thử lại
+          </button>
+        </div>
+      )}
+      {data && data.length === 0 && !isLoading && (
+        <EmptyState
+          title="Chưa có sự kiện nào"
+          description="Tạo sự kiện đầu tiên để bắt đầu bán vé và check-in."
+          action={
+            <Button asChild>
+              <a href="/events/new">+ Tạo sự kiện</a>
+            </Button>
+          }
+        />
       )}
       <div className="space-y-2">
         {data?.map((event) => (
