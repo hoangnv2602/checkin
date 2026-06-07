@@ -131,12 +131,15 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
 // CurrentTenantMiddleware (chạy sớm — set ICurrentTenant trước EF)
 app.UseMiddleware<SaasCheckin.HttpApi.Host.Middleware.CurrentTenantMiddleware>();
 
-// REST controllers (Phase 1 BFF → core-api goes via REST, not gRPC — see I-102 plan note)
-// gRPC service registration is on hold until `buf generate` chạy (I-105) — Phase 1
-// raw POCO binding với grpc-dnet yêu cầu generated abstract base với static `Service`
-// field mà ta chưa có.
+// gRPC services — bind qua raw POCO BindService() (Phase stand-in). Khi buf generate chạy (I-105)
+// sẽ thay bằng generated abstract base + MapGrpcService<T>() reflection.
+app.MapGrpcService<IdentityGrpcService>();
+app.MapGrpcService<EventGrpcService>();
+app.MapGrpcService<VenueGrpcService>();
+app.MapGrpcService<RegistrationGrpcService>();
+app.MapGrpcService<CheckInGrpcService>();
 
-// REST controllers
+// REST controllers (mirror gRPC for Playwright / Swagger)
 app.MapControllers();
 
 app.MapGet("/", () => Results.Redirect("/scalar/v1"));
