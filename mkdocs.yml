@@ -1,0 +1,93 @@
+# mkdocs.yml — I-604 docs site config.
+#
+# Builds the public API reference + ops runbooks site at /docs/.
+# Auto-publishes on push to main via .github/workflows/docs.yml.
+#
+# Install: `pip install mkdocs mkdocs-material`
+# Serve locally: `mkdocs serve`
+# Deploy: `mkdocs gh-deploy --force` (CI handles this on merge to main).
+site_name: SaaS Check-in Docs
+site_description: Multi-tenant event check-in platform — operator + developer docs
+site_author: saas-checkin team
+docs_dir: docs
+site_url: https://docs.saas-checkin.com/
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.indexes
+    - search.highlight
+    - search.suggest
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+  icon:
+    repo: fontawesome/brands/github
+
+repo_url: https://github.com/saas-checkin/platform
+edit_uri: edit/main/docs/
+
+nav:
+  - Home: 00-overview.md
+  - Architecture:
+      - Overview: 01-architecture.md
+      - Tech stack: 02-tech-stack.md
+      - Monorepo: 03-monorepo.md
+      - Bounded contexts: 04-bounded-contexts.md
+      - Database: 05-database.md
+  - API:
+      - Reference: 06-api.md
+      - Structure: api/structure.md
+  - Frontend: 07-frontend.md
+  - Mobile: 08-mobile.md
+  - DevOps: 09-devops.md
+  - Roadmap: 10-roadmap.md
+  - Checkin admin: checkin-admin.md
+  - Design system: design-system.md
+  - Decisions: decisions.md
+  - Architecture Decision Records: adr/index.md
+  - Runbooks:
+      - Overview: runbooks/README.md
+      - Initial deploy: runbooks/initial-deploy.md
+      - Add new VPS: runbooks/add-new-vps.md
+      - Database restore: runbooks/db-restore.md
+      - Rotate JWT keys: runbooks/rotate-jwt-keys.md
+      - Incident response: runbooks/incident-response.md
+  - Operations:
+      - Dev onboarding: operations/onboarding-dev.md
+      - Launch checklist: operations/launch-checklist.md
+      - Performance tuning: operations/perf-tuning-checklist.md
+      - Store submission: operations/store-submission.md
+  - Reference: references.md
+  - Out of scope: 12-out-of-scope.md
+  - Risk register: 11-risks.md
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - toc:
+      permalink: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+
+plugins:
+  - search
+  - autorefs
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/saas-checkin/platform
