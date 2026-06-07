@@ -5,7 +5,7 @@
  * data, route tới adapter tương ứng. Auto-promote to DLQ on exhaustion
  * (BaseDlqProcessor.onFailed).
  */
-import { InjectQueue } from "@nestjs/bullmq";
+import { InjectQueue, Processor } from "@nestjs/bullmq";
 import { Job, Queue } from "bullmq";
 import { SlackAdapter } from "../adapters/slack.adapter";
 import { DiscordAdapter } from "../adapters/discord.adapter";

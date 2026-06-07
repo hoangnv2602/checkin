@@ -5,7 +5,7 @@
  * exponential backoff, sau đó auto-promote sang DLQ (queue_dlx) qua
  * BaseDlqProcessor.onFailed().
  */
-import { InjectQueue } from "@nestjs/bullmq";
+import { InjectQueue, Processor } from "@nestjs/bullmq";
 import { Queue } from "bullmq";
 import { Job } from "bullmq";
 import { ResendAdapter } from "../adapters/resend.adapter";

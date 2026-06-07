@@ -8,8 +8,8 @@
  *        registered với MONITORED_QUEUES token ở onApplicationBootstrap
  *        for stuck-job sweep.
  */
-import { Inject, InjectQueue, Module, type OnApplicationBootstrap } from "@nestjs/common";
-import { BullModule } from "@nestjs/bullmq";
+import { Inject, Module, type OnApplicationBootstrap } from "@nestjs/common";
+import { BullModule, InjectQueue } from "@nestjs/bullmq";
 import type { Queue } from "bullmq";
 import { ResendAdapter } from "./adapters/resend.adapter";
 import { SlackAdapter } from "./adapters/slack.adapter";
@@ -42,6 +42,7 @@ import { MONITORED_QUEUES } from "../_shared/queue/queue.module";
     ChatConfigService,
     ChatNotifierService,
     ChatSendProcessor,
+    ChatRateLimiter,
     {
       provide: SlackAdapter,
       useFactory: (cfg: ChatConfigService, rl: ChatRateLimiter) =>
