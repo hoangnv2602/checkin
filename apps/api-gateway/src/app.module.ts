@@ -18,6 +18,7 @@ import { AuditModule } from "./modules/audit/audit.module";
 import { OnboardingModule } from "./modules/onboarding/onboarding.module";
 import { QueueModule } from "./modules/_shared/queue/queue.module";
 import { WebhookModule } from "./modules/webhooks/webhook.module";
+import { FormBuilderModule } from "./modules/form-builder/form.module";
 import { JwtAuthGuard } from "./modules/auth/guards/jwt-auth.guard";
 
 @Module({
@@ -50,6 +51,7 @@ import { JwtAuthGuard } from "./modules/auth/guards/jwt-auth.guard";
     OnboardingModule,   // I-703: 5-step wizard state (Redis-backed, 90-day TTL)
     QueueModule,        // I-806: DLQ + stuck-job detector + queue depth metrics
     WebhookModule,      // I-901: tenant outbound webhooks (CRUD + delivery queue)
+    FormBuilderModule,  // I-903: custom field builder (CRUD + JSON schema export)
   ],
   providers: [
     // Global JWT guard — opt-out via @Public() decorator
