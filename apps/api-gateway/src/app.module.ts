@@ -13,6 +13,8 @@ import { GrpcServerModule } from "./modules/grpc-server/grpc-server.module";
 import { RedisModule } from "./modules/_shared/redis/redis.module";
 import { CheckinAdminAuthModule } from "./modules/checkin-admin/admin-auth.module";
 import { SubscriptionModule } from "./modules/billing/subscription/subscription.module";
+import { AnalyticsModule } from "./modules/analytics/analytics.module";
+import { AuditModule } from "./modules/audit/audit.module";
 import { JwtAuthGuard } from "./modules/auth/guards/jwt-auth.guard";
 
 @Module({
@@ -40,6 +42,8 @@ import { JwtAuthGuard } from "./modules/auth/guards/jwt-auth.guard";
     CoreApiModule,   // gRPC client tới core-api:50051 — Phase 1
     CheckinAdminAuthModule, // I-107: platform admin auth (POST /v1/admin/auth/*)
     SubscriptionModule, // I-501: subscription management + Stripe sub webhook
+    AnalyticsModule,    // I-601: event stats report + CSV export
+    AuditModule,        // I-602: audit log viewer (Owner only)
   ],
   providers: [
     // Global JWT guard — opt-out via @Public() decorator

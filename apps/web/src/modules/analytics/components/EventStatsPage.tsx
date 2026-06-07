@@ -4,7 +4,8 @@
  * /[orgSlug]/events/[eventId]/stats — analytics dashboard với cohort, no-show,
  * time-to-checkin, peak gate + time, CSV export.
  */
-import { headers } from "next/headers";
+import { useAuth } from "@/modules/auth/hooks/useAuth";
+import { env } from "@/modules/_shared/config/env";
 
 interface Report {
   eventId: string;
@@ -32,12 +33,16 @@ export async function EventStatsPage({
   orgSlug: string;
   eventId: string;
 }) {
-  const hdrs = await headers();
-  const organizationId = hdrs.get("x-tenant-id") ?? "";
-  const coreApi = process.env.CORE_API_BASE ?? "http://localhost:5050";
+  const session = await useAuth();
+  const organizationId = session?.tenant?.id ?? "";
+
+  const bff = env.bffUrl;
   const res = await fetch(
-    `${coreApi}/v1/analytics/events/${eventId}/report?organizationId=${organizationId}`,
-    { cache: "no-store" },
+    `${bff}/v1/analytics/events/${eventId}/report`,
+    {
+      cache: "no-store",
+      headers: organizationId ? { "X-Tenant-Id": organizationId } : {},
+    },
   );
   if (!res.ok) {
     return <p className="p-8 text-destructive">Failed to load analytics</p>;
