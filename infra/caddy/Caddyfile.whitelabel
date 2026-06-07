@@ -1,0 +1,56 @@
+# infra/caddy/Caddyfile.whitelabel
+#
+# I-804 — Caddy on-demand TLS via Cloudflare DNS-01 challenge.
+# Custom domain tự động issue Let's Encrypt cert khi có request đầu tiên.
+#
+# Caddy config:
+#   1. on_demand_tls: hỏi API `/whitelist-check` trước khi issue cert.
+#   2. cloudflare DNS module: verify domain owned bằng DNS-01 challenge.
+#   3. Wildcard cert `*.saas-checkin.com` cho shared domain.
+#
+# Provisioning:
+#   - DNS: tenant tạo CNAME `events.acme-corp.com → cname.saas-checkin.com`
+#   - Tenant config: gọi POST /v1/internal/domain/cache với host + tenantId
+#   - First request → Caddy issue cert qua DNS-01 → cache forever (auto-renew)
+#   - Caddy tự renew cert 30 ngày trước expiry
+
+{
+  email ops@saas-checkin.com
+  # Cloudflare DNS module — set CF_API_TOKEN trong env
+  acme_dns cloudflare {
+    api_token {$CF_API_TOKEN}
+  }
+}
+
+# Shared domain (tenant.saas-checkin.com) — wildcard cert
+*.saas-checkin.com, saas-checkin.com {
+  tls {
+    dns cloudflare
+  }
+  reverse_proxy api-gateway:3001
+  reverse_proxy web:3000
+}
+
+# On-demand TLS cho custom domain
+:443 {
+  tls {
+    on_demand
+  }
+  @customdomain host not saas-checkin.com *.saas-checkin.com
+  handle @customdomain {
+    # Pre-flight check: domain đã được map với tenant nào chưa?
+    # Nếu không → 404 (Caddy không issue cert)
+    reverse_proxy https://api-gateway:3001 {
+      header_up Host {host}
+    }
+  }
+  handle_response @customdomain {
+    # Sau khi BFF response, nếu 404 + cert missing → request issue cert
+    # Caddy on-demand tự handle khi request đầu tiên match 1 SNI
+  }
+  reverse_proxy api-gateway:3001
+  reverse_proxy web:3000
+}
+
+# Admin endpoint — whitelist check (chỉ Caddy gọi)
+# apps/api-gateway whitelist check returns 200 nếu host đã map tenant, 404 nếu không.

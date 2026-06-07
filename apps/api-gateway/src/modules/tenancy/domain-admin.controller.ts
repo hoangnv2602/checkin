@@ -29,13 +29,13 @@ export class DomainAdminController {
   @Post("cache")
   async cache(
     @Headers("x-internal-key") key: string,
-    @Body() body: { host: string; tenantId: string },
+    @Body() body: { host: string; tenantId: string; plan?: string },
   ): Promise<{ ok: true }> {
     this.assertKey(key);
     if (!body.host || !body.tenantId) {
       throw new BadRequestException("host and tenantId required");
     }
-    await this.resolver.cacheDomain(body.host, body.tenantId);
+    await this.resolver.cacheDomain(body.host, body.tenantId, body.plan ?? "enterprise");
     return { ok: true };
   }
 
