@@ -73,7 +73,11 @@ export class SubOrgService {
     }
 
     // Inherit plan from parent if not explicitly set
-    const inputWithPlan = { ...input, plan: input.plan ?? parent.plan ?? null };
+    // Coerce null -> undefined: OrganizationInput.plan is `string | undefined`,
+    // but parent.plan is `string | null` (root tenants with no plan stored).
+    const inheritedPlan: string | undefined =
+      input.plan ?? parent.plan ?? undefined;
+    const inputWithPlan = { ...input, plan: inheritedPlan };
     return this.store.create(rootTenantId, inputWithPlan, parent, newDepth);
   }
 

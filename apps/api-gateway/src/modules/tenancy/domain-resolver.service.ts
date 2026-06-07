@@ -75,8 +75,12 @@ export class DomainResolverService {
 
   /**
    * Cache a domain → tenant mapping. Gọi từ admin API khi tenant cập nhật customDomain.
+   * `plan` is accepted for API parity with the newer domain/domain-resolver
+   * service (used by middleware for plan-aware rate limiting). The legacy
+   * string-shaped cache here does not store plan; callers that need plan
+   * resolution should use the newer service in modules/tenancy/domain/.
    */
-  async cacheDomain(host: string, tenantId: string): Promise<void> {
+  async cacheDomain(host: string, tenantId: string, _plan?: string): Promise<void> {
     await this.redis.set(`tenant:domain:${host.toLowerCase()}`, tenantId, "EX", CACHE_TTL_SECONDS);
   }
 

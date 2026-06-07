@@ -15,7 +15,7 @@ import {
   Param,
   Put,
 } from "@nestjs/common";
-import { ChatConfigService, type ChatConfig } from "./chat-config.service";
+import { ChatConfigService, type ChatConfig, type ChatConfigInput } from "./chat-config.service";
 
 const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY ?? "";
 
@@ -41,7 +41,7 @@ export class ChatConfigController {
     @Param("tenantId") tenantId: string,
     @Headers("x-internal-key") key: string,
     @Body() body: { provider: "slack" | "discord"; webhookUrl: string; defaultChannel?: string },
-  ): Promise<{ ok: true; config: ChatConfig }> {
+  ): Promise<{ ok: true; config: ChatConfig | null }> {
     this.assertKey(key);
     if (!body.provider || !["slack", "discord"].includes(body.provider)) {
       throw new BadRequestException("provider must be slack or discord");
@@ -49,13 +49,13 @@ export class ChatConfigController {
     if (!body.webhookUrl || !body.webhookUrl.startsWith("https://")) {
       throw new BadRequestException("webhookUrl must be https");
     }
-    const cfg: ChatConfig = {
+    const input: ChatConfigInput = {
       provider: body.provider,
       webhookUrl: body.webhookUrl,
       defaultChannel: body.defaultChannel,
-      createdAt: new Date().toISOString(),
     };
-    await this.config.set(tenantId, cfg);
+    await this.config.set(tenantId, input);
+    const cfg = await this.config.get(tenantId);
     return { ok: true, config: cfg };
   }
 

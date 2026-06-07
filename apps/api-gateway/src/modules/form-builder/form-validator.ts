@@ -8,7 +8,7 @@ import type { FormField, FormTemplate } from "./form.types";
 import {
   ALL_FORM_FIELD_TYPES,
   FORM_FIELDS_MAX,
-  FORM_FIELD_HELP_MAX,
+  FORM_FIELD_HELP_MAX_LENGTH,
   FORM_FIELD_KEY_PATTERN,
   FORM_FIELD_LABEL_MAX_LENGTH,
   FORM_FIELD_OPTIONS_MAX,
@@ -111,8 +111,8 @@ function validateField(f: FormField | undefined, index: number, errors: string[]
   }
 
   // helpText
-  if (f.helpText !== undefined && f.helpText.length > FORM_FIELD_HELP_MAX) {
-    errors.push(`field[${index}].helpText max ${FORM_FIELD_HELP_MAX} chars`);
+  if (f.helpText !== undefined && f.helpText.length > FORM_FIELD_HELP_MAX_LENGTH) {
+    errors.push(`field[${index}].helpText max ${FORM_FIELD_HELP_MAX_LENGTH} chars`);
   }
 
   // required
