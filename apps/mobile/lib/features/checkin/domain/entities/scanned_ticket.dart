@@ -1,9 +1,9 @@
-/**
- * lib/features/checkin/domain/entities/scanned_ticket.dart
- *
- * I-403 — ScannedTicket entity. Mirror QrPayload shape.
- */
+/// I-403 — ScannedTicket entity. Mirror QrPayload shape.
+library;
+
 import 'package:equatable/equatable.dart';
+
+import '../../../../core/types/guid.dart';
 
 class ScannedTicket extends Equatable {
   final GuidJti jti;

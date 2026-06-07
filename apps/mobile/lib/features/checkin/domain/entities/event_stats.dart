@@ -1,8 +1,10 @@
-/**
- * lib/features/checkin/domain/entities/event_stats.dart
- *
- * I-801: domain entity cho realtime stats từ gRPC GetEventStats.
- */
+///
+/// lib/features/checkin/domain/entities/event_stats.dart
+/// 
+/// I-801: domain entity cho realtime stats từ gRPC GetEventStats.
+///
+library;
+
 class EventStats {
   final String eventId;
   final int totalRegistered;

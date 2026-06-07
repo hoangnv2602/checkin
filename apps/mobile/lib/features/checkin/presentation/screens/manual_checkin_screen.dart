@@ -1,17 +1,15 @@
-/**
- * lib/features/checkin/presentation/screens/manual_checkin_screen.dart
- *
- * I-403 — Staff manual check-in: search attendee by email/name, then submit.
- * Useful khi QR hỏng / mất hoặc attendee chưa nhận được email.
- *
- * Dùng chung CheckInRemoteDataSource.manual() (POST /v1/checkin/manual).
- */
+/// I-403 — Staff manual check-in: search attendee by email/name, then submit.
+/// Useful khi QR hỏng / mất hoặc attendee chưa nhận được email.
+///
+/// Dùng chung CheckInRemoteDataSource.manual() (POST /v1/checkin/manual).
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../blocs/scan_bloc.dart';
+import '../../../../core/types/guid.dart';
 
 class ManualCheckInScreen extends StatefulWidget {
   final Guid eventId;
@@ -163,8 +161,8 @@ class ManualCheckInCubit {
     required Guid organizationId,
     required Guid gateId,
     required Guid staffUserId,
-  }) =>
-      _repo.manualCheckIn(
+  }) async =>
+      await _repo.manualCheckIn(
         attendeeEmail: attendeeEmail,
         eventId: eventId,
         organizationId: organizationId,

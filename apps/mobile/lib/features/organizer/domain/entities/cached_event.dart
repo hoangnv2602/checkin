@@ -1,9 +1,11 @@
-/**
- * lib/features/organizer/domain/entities/cached_event.dart
- *
- * I-907 — Domain entity cho cached event + stats.
- * Mirror EventStats từ checkin context (I-401).
- */
+///
+/// lib/features/organizer/domain/entities/cached_event.dart
+/// 
+/// I-907 — Domain entity cho cached event + stats.
+/// Mirror EventStats từ checkin context (I-401).
+///
+library;
+
 import 'package:meta/meta.dart';
 
 @immutable

@@ -1,8 +1,10 @@
-/**
- * apps/mobile/lib/core/observability/sentry_init.dart
- *
- * I-603 — Sentry init cho Flutter. Wrap sentry_flutter (đã có trong pubspec).
- */
+///
+/// apps/mobile/lib/core/observability/sentry_init.dart
+/// 
+/// I-603 — Sentry init cho Flutter. Wrap sentry_flutter (đã có trong pubspec).
+///
+library;
+
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 class SentryInit {

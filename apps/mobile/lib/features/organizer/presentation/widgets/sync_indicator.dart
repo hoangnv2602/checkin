@@ -1,10 +1,11 @@
-/**
- * lib/features/organizer/presentation/widgets/sync_indicator.dart
- *
- * I-907 — Sync indicator widget: hiển thị trạng thái cache (fresh/stale/error).
- */
+///
+/// lib/features/organizer/presentation/widgets/sync_indicator.dart
+/// 
+/// I-907 — Sync indicator widget: hiển thị trạng thái cache (fresh/stale/error).
+///
+library;
+
 import 'package:flutter/material.dart';
-import '../../domain/entities/cached_event.dart';
 import '../../domain/entities/dashboard_state.dart';
 
 class SyncIndicator extends StatelessWidget {
