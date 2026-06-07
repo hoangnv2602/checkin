@@ -33,6 +33,10 @@ public sealed class AuditLogEntityConfiguration
             .HasDatabaseName("IX_audit_log_tenant_id_actor_occurred_at");
         b.HasIndex(x => new { x.TenantId, x.EntityType, x.EntityId })
             .HasDatabaseName("IX_audit_log_tenant_id_entity");
+        // I-704: filter by action dropdown (audit viewer) — ASC existing index
+        // supports DESC scan natively in Postgres, no need for a second DESC index.
+        b.HasIndex(x => new { x.TenantId, x.Action })
+            .HasDatabaseName("IX_audit_log_tenant_id_action");
     }
 
     public sealed class AuditLogEntity

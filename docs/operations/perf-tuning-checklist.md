@@ -2,6 +2,22 @@
 
 Profile 1000 MAU trong staging, identify bottlenecks, optimize, measure impact.
 
+## Perf budget (p95 latency)
+
+| Endpoint | Target | Hard limit | Notes |
+|---|---|---|---|
+| `GET /[orgSlug]/dashboard` | 200ms | 500ms | RSC + React Query cached |
+| `GET /[orgSlug]/events/[eventId]/checkin` | 200ms | 500ms | WebSocket real-time feed |
+| `POST /v1/checkin/scan` | 200ms | 350ms | Hot path: gate scanner |
+| `GET /e/[orgSlug]/event/[eventId]` | 300ms | 800ms | Public, no auth |
+| `GET /[orgSlug]/billing` | 500ms | 1500ms | Stripe sync may be slow |
+| `GET /v1/analytics/events/:id/report` | 1000ms | 3000ms | Heavy aggregation |
+| `GET /v1/audit/log` | 500ms | 1500ms | Filtered, paginated |
+| `GET /health/ready` | 50ms | 200ms | Liveness probe |
+
+Run k6 staged-load test (`tools/loadtest/checkin.js`) 30 phút trước mỗi release.
+Fail CI nếu p95 vượt hard limit.
+
 ## Profile queries (pg_stat_statements)
 
 ```sql
@@ -39,9 +55,12 @@ Verify indexes (Phase 3-5 migrations):
 - `audit_log (tenant_id, occurred_at)` ✓
 - `subscriptions (organization_id)` UNIQUE ✓
 
-Missing indexes thường gặp:
-- `(tenant_id, created_at)` cho audit log filter
-- `(tenant_id, email)` nếu search attendees theo email
+Missing indexes thường gặp (đã add qua migration `20260607000000_AddPerfTuningIndexes`):
+- ✅ `audit_log (tenant_id, occurred_at DESC)` — recent activity panel
+- ✅ `audit_log (tenant_id, action)` — filter by action dropdown
+- ✅ `registrations (tenant_id, created_at DESC)` — new-registrations widget
+- ✅ `check_in_records (tenant_id, status, scanned_at)` — peak-gate computation (I-601)
+- ✅ `orders (tenant_id, buyer_email)` — search attendees by email
 
 ## Cache hit rate
 
@@ -125,3 +144,38 @@ Sentry / Grafana: track
 - [ ] DB connection utilization < 70% peak
 - [ ] No memory leak ở api-gateway (RSS stable 30 phút)
 - [ ] 0 N+1 queries (verify qua EF Core logging)
+
+## Benchmark methodology
+
+1. **Staging environment** — clone prod data 1:1 (anonymized), traffic generator k6.
+2. **Warmup** — 5 phút @ 50 VUs trước khi đo (fill cache, JIT, connection pool).
+3. **Steady state** — 30 phút @ 100 VUs (≈ 1000 MAU peak).
+4. **Spike** — 30s:100, 30s:1000, 30s:100 (verify auto-scale + cold cache).
+5. **Soak** — 4h @ 50 VUs (memory leak detection, BullMQ queue buildup).
+6. **Measure** — Grafana SLO dashboard, sample p50/p95/p99 + error rate.
+7. **Report** — append vào `docs/operations/perf-baselines.md` (mỗi release).
+
+## Profiling tools
+
+| Tool | Use |
+|---|---|
+| `pg_stat_statements` | Top 20 slow queries (mean + pct total) |
+| `EXPLAIN ANALYZE` | Drill into specific query plan |
+| `pg_locks` | Lock contention detector |
+| `k6` | HTTP load test (VUs, ramp, spike) |
+| `redis-cli INFO stats` | Hit rate, evictions, memory |
+| `dotnet-counters` | EF Core / GC / threadpool |
+| Sentry | Slow transaction trace (top 5) |
+
+## Re-tune cadence
+
+- Mỗi release lớn (Phase gate): re-run k6 staging, compare baselines.
+- Monthly: review pg_stat_statements, check index usage (`pg_stat_user_indexes`).
+- Quarterly: full audit + capacity planning.
+
+## Related
+
+- `tools/loadtest/checkin.js` — k6 scenario (I-405)
+- `docs/operations/launch-checklist.md` — p95 budget gate
+- `apps/core-api/.../Migrations/20260607000000_AddPerfTuningIndexes.cs` — I-704 migration
+
