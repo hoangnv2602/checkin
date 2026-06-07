@@ -8,6 +8,7 @@ using SaasCheckin.Application.PlatformOperations;
 using SaasCheckin.Application.Registration;
 using SaasCheckin.Domain.CheckIn;
 using SaasCheckin.Domain.Identity;
+using SaasCheckin.HttpApi.Host.Health;
 using SaasCheckin.Domain.PlatformOperations;
 using SaasCheckin.Domain.Registration;
 using SaasCheckin.HttpApi.Host.Grpc;
@@ -144,6 +145,8 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
 {
     Predicate = check => check.Tags.Contains("ready"),
 });
+// I-805: Replica health endpoint — expose lag cho Grafana scrape
+app.MapReplicaHealth();
 
 // CurrentTenantMiddleware (chạy sớm — set ICurrentTenant trước EF)
 app.UseMiddleware<SaasCheckin.HttpApi.Host.Middleware.CurrentTenantMiddleware>();

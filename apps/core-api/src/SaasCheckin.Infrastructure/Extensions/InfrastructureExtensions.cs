@@ -36,6 +36,21 @@ public static class InfrastructureExtensions
             options.AddInterceptors(sp.GetRequiredService<TenantDbConnectionInterceptor>());
         });
 
+        // I-805: Read replica DbContext (chỉ register nếu có DATABASE__READONLY_CONNECTION
+        // — dev mặc định không có, provider sẽ fallback primary).
+        var readonlyConnection = configuration.GetConnectionString("ReadOnly")
+            ?? Environment.GetEnvironmentVariable("DATABASE__READONLY_CONNECTION")
+            ?? Environment.GetEnvironmentVariable("DATABASE_READONLY_CONNECTION");
+        if (!string.IsNullOrEmpty(readonlyConnection))
+        {
+            services.AddDbContext<SaasCheckinReadDbContext>((sp, options) =>
+            {
+                options.UseNpgsql(readonlyConnection);
+                options.AddInterceptors(sp.GetRequiredService<TenantDbConnectionInterceptor>());
+            });
+        }
+        services.AddSingleton<IDbContextProvider, ReadReplicaDbContextProvider>();
+
         // Repositories
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IOrganizationRepository, OrganizationRepository>();
