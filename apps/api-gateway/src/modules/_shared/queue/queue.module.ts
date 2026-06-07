@@ -13,8 +13,9 @@ import { StuckJobDetectorProcessor } from "./stuck-job-detector.processor";
 import { QueueReplayController } from "./queue-replay.controller";
 import { ScheduleModule } from "@nestjs/schedule";
 import { Queue } from "bullmq";
+import { MONITORED_QUEUES } from "./queue.tokens";
 
-export const MONITORED_QUEUES = "MONITORED_QUEUES";
+export { MONITORED_QUEUES } from "./queue.tokens";
 
 /**
  * Singleton array shared across all consumers of the MONITORED_QUEUES token.

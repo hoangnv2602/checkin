@@ -12,7 +12,7 @@ import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { Queue } from "bullmq";
 import { DlqService } from "./dlq.service";
-import { MONITORED_QUEUES } from "./queue.module";
+import { MONITORED_QUEUES } from "./queue.tokens";
 
 export const STUCK_THRESHOLD_MS = 5 * 60 * 1000;
 

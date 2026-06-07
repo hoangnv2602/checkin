@@ -19,7 +19,7 @@ import {
 } from "@nestjs/common";
 import { Queue } from "bullmq";
 import { DlqService } from "./dlq.service";
-import { MONITORED_QUEUES } from "./queue.module";
+import { MONITORED_QUEUES } from "./queue.tokens";
 
 const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY ?? "";
 
