@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
+using SaasCheckin.Application.Billing;
 using SaasCheckin.Application.CheckIn.Commands;
 using SaasCheckin.Application.CheckIn.Queries;
 using SaasCheckin.Application.Common.Behaviors;
@@ -12,7 +13,9 @@ using SaasCheckin.HttpApi.Host.Health;
 using SaasCheckin.Domain.PlatformOperations;
 using SaasCheckin.Domain.Registration;
 using SaasCheckin.HttpApi.Host.Grpc;
+using SaasCheckin.Infrastructure.Billing;
 using SaasCheckin.Infrastructure.CheckIn;
+using SaasCheckin.Infrastructure.EventManagement;
 using SaasCheckin.Infrastructure.Extensions;
 using SaasCheckin.Infrastructure.Observability;
 using SaasCheckin.Infrastructure.Registration;
@@ -59,17 +62,23 @@ builder.Services.AddBoundedContextModule<CheckInModule>(builder.Configuration);
 builder.Services.AddBoundedContextModule<CheckInInfrastructureModule>(builder.Configuration);
 
 // Billing bounded-context module (I-501): Subscription state machine + Plan limits.
+//   BillingModule           — domain services
+//   BillingInfrastructure   — in-memory repos (Phase 0; Phase 5 swaps in EF Core)
+//   AddBillingApplication   — IPlanLimitEnforcer (lives in Application layer)
 builder.Services.AddBoundedContextModule<SaasCheckin.Domain.Billing.BillingModule>(builder.Configuration);
-// AddBillingApplication: aggregate handlers already scanned via MediatR assembly registration below.
+builder.Services.AddBoundedContextModule<BillingInfrastructureModule>(builder.Configuration);
+builder.Services.AddBillingApplication();
 
 // PlatformOperations bounded-context module (I-107): TOTP verifier + DI cho platform auth.
 builder.Services.AddBoundedContextModule<PlatformOperationsModule>(builder.Configuration);
 builder.Services.AddPlatformApplication();
 
 // EventManagement bounded-context module (I-201): Event + Session + Venue aggregates,
-// Application handlers (MediatR auto-discovered), gRPC stand-ins (Phase 2 wires BFF via REST).
+// Application handlers (MediatR auto-discovered), in-memory repos for Phase 0 dev boot
+// (Phase 2 swaps in EF Core impls without changing the registration shape).
 builder.Services.AddBoundedContextModule<SaasCheckin.Domain.EventManagement.EventManagementModule>(builder.Configuration);
 builder.Services.AddBoundedContextModule<SaasCheckin.Application.EventManagement.EventManagementApplicationModule>(builder.Configuration);
+builder.Services.AddBoundedContextModule<EventManagementInfrastructureModule>(builder.Configuration);
 
 // Application services (ICurrentTenant, IPermissionChecker, IIntegrationEventBus)
 builder.Services.AddSaasCheckinApplication();
