@@ -68,6 +68,12 @@ export class PlanRateLimitGuard implements CanActivate, OnModuleDestroy {
     const result = await this.checkSlidingWindow(key, limit, burst, tier?.burstWindowMs ?? 10_000);
 
     if (!result.allowed) {
+      const res = ctx.switchToHttp().getResponse();
+      if (res && typeof res.setHeader === "function") {
+        res.setHeader("Retry-After", String(result.retryAfterSec));
+        res.setHeader("X-RateLimit-Limit", String(limit));
+        res.setHeader("X-RateLimit-Remaining", "0");
+      }
       throw new HttpException(
         {
           statusCode: HttpStatus.TOO_MANY_REQUESTS,

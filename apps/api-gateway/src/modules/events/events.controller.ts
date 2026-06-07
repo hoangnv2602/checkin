@@ -18,17 +18,20 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import type { VerifiedAuth } from "../auth/services/jwt-verifier.service";
 import { PlanLimit } from "../billing/plan-limits/plan-limit.guard";
+import { PlanRateLimitGuard } from "../auth/guards/plan-rate-limit.guard";
 import { CreateEventDto, ListEventsQueryDto, UpdateEventDto } from "./dto/events.dto";
 import { CreateVenueDto, ListVenuesQueryDto } from "./dto/venues.dto";
 import { EventsService, type EventDto, type VenueDto, type SessionDto } from "./events.service";
 
 @ApiTags("events")
 @Controller("v1/events")
+@UseGuards(PlanRateLimitGuard) // I-807: per-tenant rate limit
 export class EventsController {
   constructor(private readonly events: EventsService) {}
 
