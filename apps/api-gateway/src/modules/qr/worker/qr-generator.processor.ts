@@ -17,7 +17,9 @@ import { Job } from "bullmq";
 import { QrRenderService } from "../service/qr-render.service";
 import { readFile } from "node:fs/promises";
 
-export const QR_GENERATE_QUEUE = "qr:generate";
+// BullMQ rejects queue names containing `:` (Redis key separator). Must
+// match `^[A-Za-z0-9_-]+$`. See test/queue/queue-names.spec.ts.
+export const QR_GENERATE_QUEUE = "qr_generate";
 
 export interface QrGenerateJobData {
   organizationId: string;

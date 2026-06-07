@@ -11,7 +11,9 @@ import { Job } from "bullmq";
 import { EmailNotifierService } from "../../notification/email-notifier.service";
 
 const CORE_API_BASE = process.env.CORE_API_BASE ?? "http://localhost:5050";
-export const TRIAL_SCHEDULER_QUEUE = "billing:trial-scheduler";
+// BullMQ rejects queue names containing `:` (Redis key separator). Must
+// match `^[A-Za-z0-9_-]+$`. See test/queue/queue-names.spec.ts.
+export const TRIAL_SCHEDULER_QUEUE = "billing_trial_scheduler";
 
 interface TrialJob {
   organizationId: string;
