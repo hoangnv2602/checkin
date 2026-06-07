@@ -14,18 +14,27 @@ import {
   type ChatSendResult,
   type ChatSenderInterface,
 } from "./chat-sender.interface";
-
-const SLACK_API = "https://slack.com/api";
+import { ChatRateLimiter } from "../rate-limit/chat-rate-limiter";
 
 @Injectable()
 export class SlackAdapter implements ChatSenderInterface {
   readonly name = "slack" as const;
   private readonly logger = new Logger(SlackAdapter.name);
 
-  /** Webhook URL → cached, fetched từ tenant config qua ChatConfigService. */
-  constructor(private readonly fetchWebhook: (tenantId: string) => Promise<string | null>) {}
+  /**
+   * @param fetchWebhook  Resolve tenantId → webhook URL (decrypt on demand).
+   * @param rateLimiter   Optional — wire from chat-send.processor for prod.
+   *                      Tests inject undefined để skip rate limiting.
+   */
+  constructor(
+    private readonly fetchWebhook: (tenantId: string) => Promise<string | null>,
+    private readonly rateLimiter?: ChatRateLimiter,
+  ) {}
 
   async send(msg: ChatMessage): Promise<ChatSendResult> {
+    if (this.rateLimiter) {
+      await this.rateLimiter.waitForSlot("slack", msg.tenantId);
+    }
     const webhookUrl = await this.fetchWebhook(msg.tenantId);
     if (!webhookUrl) {
       throw new Error(`slack webhook not configured for tenant=${msg.tenantId}`);
@@ -39,6 +48,8 @@ export class SlackAdapter implements ChatSenderInterface {
     };
 
     const maxAttempts = 3;
+    let lastStatus = 0;
+    let lastBody = "";
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const res = await fetch(webhookUrl, {
         method: "POST",
@@ -57,19 +68,23 @@ export class SlackAdapter implements ChatSenderInterface {
         };
       }
 
-      if (res.status === 429 || res.status >= 500) {
-        if (attempt < maxAttempts) {
-          const backoffMs = 1000 * 3 ** (attempt - 1);
-          this.logger.warn(`slack retry attempt=${attempt} status=${res.status} backoff=${backoffMs}ms`);
-          await sleep(backoffMs);
-          continue;
-        }
-      }
+      lastStatus = res.status;
+      lastBody = await res.text();
 
-      const body = await res.text();
-      throw new Error(`slack send failed status=${res.status} body=${body.slice(0, 200)}`);
+      if ((res.status === 429 || res.status >= 500) && attempt < maxAttempts) {
+        const backoffMs = 1000 * 3 ** (attempt - 1);
+        this.logger.warn(
+          `slack retry attempt=${attempt} status=${res.status} backoff=${backoffMs}ms`,
+        );
+        await sleep(backoffMs);
+        continue;
+      }
+      // Non-retryable status, or last attempt: fall through to throw below.
+      break;
     }
 
-    throw new Error("slack send exhausted retries");
+    throw new Error(
+      `slack send failed status=${lastStatus} body=${lastBody.slice(0, 200)} (exhausted ${maxAttempts} attempts)`,
+    );
   }
 }

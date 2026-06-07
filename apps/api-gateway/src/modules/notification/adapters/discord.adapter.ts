@@ -14,15 +14,22 @@ import {
   type ChatSendResult,
   type ChatSenderInterface,
 } from "./chat-sender.interface";
+import { ChatRateLimiter } from "../rate-limit/chat-rate-limiter";
 
 @Injectable()
 export class DiscordAdapter implements ChatSenderInterface {
   readonly name = "discord" as const;
   private readonly logger = new Logger(DiscordAdapter.name);
 
-  constructor(private readonly fetchWebhook: (tenantId: string) => Promise<string | null>) {}
+  constructor(
+    private readonly fetchWebhook: (tenantId: string) => Promise<string | null>,
+    private readonly rateLimiter?: ChatRateLimiter,
+  ) {}
 
   async send(msg: ChatMessage): Promise<ChatSendResult> {
+    if (this.rateLimiter) {
+      await this.rateLimiter.waitForSlot("discord", msg.tenantId);
+    }
     const webhookUrl = await this.fetchWebhook(msg.tenantId);
     if (!webhookUrl) {
       throw new Error(`discord webhook not configured for tenant=${msg.tenantId}`);
@@ -36,6 +43,8 @@ export class DiscordAdapter implements ChatSenderInterface {
     };
 
     const maxAttempts = 3;
+    let lastStatus = 0;
+    let lastBody = "";
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const res = await fetch(webhookUrl, {
         method: "POST",
@@ -52,19 +61,21 @@ export class DiscordAdapter implements ChatSenderInterface {
         };
       }
 
-      if (res.status === 429 || res.status >= 500) {
-        if (attempt < maxAttempts) {
-          const backoffMs = 1000 * 3 ** (attempt - 1);
-          this.logger.warn(`discord retry attempt=${attempt} status=${res.status} backoff=${backoffMs}ms`);
-          await sleep(backoffMs);
-          continue;
-        }
+      if ((res.status === 429 || res.status >= 500) && attempt < maxAttempts) {
+        const backoffMs = 1000 * 3 ** (attempt - 1);
+        this.logger.warn(
+          `discord retry attempt=${attempt} status=${res.status} backoff=${backoffMs}ms`,
+        );
+        await sleep(backoffMs);
+        continue;
       }
-
-      const body = await res.text();
-      throw new Error(`discord send failed status=${res.status} body=${body.slice(0, 200)}`);
+      lastStatus = res.status;
+      lastBody = await res.text();
+      break;
     }
 
-    throw new Error("discord send exhausted retries");
+    throw new Error(
+      `discord send failed status=${lastStatus} body=${lastBody.slice(0, 200)} (exhausted ${maxAttempts} attempts)`,
+    );
   }
 }
