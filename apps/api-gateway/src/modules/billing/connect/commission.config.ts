@@ -39,7 +39,11 @@ export function resolveCommissionBps(plan: PlanTier, tenantId?: string): number 
     if (override) {
       for (const entry of override.split(",")) {
         const [tid, bps] = entry.split(":");
-        if (tid === tenantId) return Number(bps);
+        if (!tid || !bps) continue; // malformed — skip
+        if (tid === tenantId) {
+          const parsed = Number(bps);
+          if (Number.isFinite(parsed)) return parsed;
+        }
       }
     }
   }
