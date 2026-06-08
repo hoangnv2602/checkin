@@ -10,12 +10,3 @@ public sealed record ListEventsQuery(
     EventStatus? Status,
     int Skip,
     int Take) : IRequest<IReadOnlyList<Event>>;
-
-public sealed class ListEventsQueryHandler : IRequestHandler<ListEventsQuery, IReadOnlyList<Event>>
-{
-    private readonly IEventRepository _events;
-    public ListEventsQueryHandler(IEventRepository events) => _events = events;
-
-    public Task<IReadOnlyList<Event>> Handle(ListEventsQuery query, CancellationToken ct) =>
-        _events.ListAsync(query.OrganizationId, query.Status, query.Skip, query.Take, ct);
-}

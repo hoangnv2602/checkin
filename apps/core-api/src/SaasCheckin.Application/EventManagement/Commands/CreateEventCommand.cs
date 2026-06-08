@@ -14,29 +14,3 @@ public sealed record CreateEventCommand(
     DateTimeOffset StartAt,
     DateTimeOffset EndAt,
     int Capacity) : IRequest<EventId>;
-
-public sealed class CreateEventCommandHandler
-    : IRequestHandler<CreateEventCommand, EventId>
-{
-    private readonly IEventRepository _events;
-    private readonly IClock _clock;
-
-    public CreateEventCommandHandler(IEventRepository events, IClock clock)
-    {
-        _events = events;
-        _clock = clock;
-    }
-
-    public async Task<EventId> Handle(CreateEventCommand cmd, CancellationToken ct)
-    {
-        var @event = Event.Create(
-            cmd.OrganizationId,
-            cmd.Title,
-            cmd.Description,
-            EventPeriod.Create(cmd.StartAt, cmd.EndAt),
-            Capacity.Create(cmd.Capacity),
-            _clock);
-        await _events.AddAsync(@event, ct);
-        return @event.Id;
-    }
-}

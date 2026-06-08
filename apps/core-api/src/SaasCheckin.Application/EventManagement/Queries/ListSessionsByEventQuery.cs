@@ -10,14 +10,3 @@ public sealed record ListSessionsByEventQuery(
     Guid EventId,
     int Skip,
     int Take) : IRequest<IReadOnlyList<Session>>;
-
-public sealed class ListSessionsByEventQueryHandler
-    : IRequestHandler<ListSessionsByEventQuery, IReadOnlyList<Session>>
-{
-    private readonly ISessionRepository _sessions;
-    public ListSessionsByEventQueryHandler(ISessionRepository sessions) => _sessions = sessions;
-
-    public Task<IReadOnlyList<Session>> Handle(ListSessionsByEventQuery query, CancellationToken ct) =>
-        _sessions.ListByEventAsync(
-            query.OrganizationId, EventId.From(query.EventId), query.Skip, query.Take, ct);
-}
