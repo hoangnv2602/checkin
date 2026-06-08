@@ -1,8 +1,7 @@
-/**
- * lib/features/checkin/domain/repositories/checkin_repository.dart
- *
- * I-403 — CheckInRepository abstract interface.
- */
+/// I-403 — CheckInRepository abstract interface.
+library;
+
+import '../../../../core/types/guid.dart';
 import '../entities/check_in_outcome.dart';
 import '../entities/scanned_ticket.dart';
 

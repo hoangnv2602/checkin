@@ -1,169 +1,31 @@
-using MediatR;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.EntityFrameworkCore;
-using SaasCheckin.Application.CheckIn.Commands;
-using SaasCheckin.Application.CheckIn.Queries;
-using SaasCheckin.Application.Common.Behaviors;
-using SaasCheckin.Application.PlatformOperations;
-using SaasCheckin.Application.Registration;
-using SaasCheckin.Domain.CheckIn;
-using SaasCheckin.Domain.Identity;
-using SaasCheckin.HttpApi.Host.Health;
-using SaasCheckin.Domain.PlatformOperations;
-using SaasCheckin.Domain.Registration;
-using SaasCheckin.HttpApi.Host.Grpc;
-using SaasCheckin.Infrastructure.CheckIn;
-using SaasCheckin.Infrastructure.Extensions;
-using SaasCheckin.Infrastructure.Observability;
-using SaasCheckin.Infrastructure.Registration;
-using SaasCheckin.Shared.Application.Extensions;
-using Scalar.AspNetCore;
-using Serilog;
-using StackExchange.Redis;
+// apps/core-api/src/SaasCheckin.HttpApi.Host/Program.cs
+//
+// Composition root. All wiring lives in Setup/* extension methods so
+// this file is a readable map of "what runs in what order":
+//   1. Builder + Serilog logging
+//   2. Service registrations (persistence → bounded contexts → mediator
+//      → API surface → auth → health → observability)
+//   3. Build + run pipeline
+//
+// Each Setup/* file owns one concern. To add a new bounded context,
+// edit Setup/BoundedContextServiceExtensions.cs. To add a new middleware,
+// edit Setup/ApplicationBuilderExtensions.cs.
+using SaasCheckin.HttpApi.Host.Setup;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Logging
-builder.Host.UseSerilog((ctx, lc) => lc
-    .ReadFrom.Configuration(ctx.Configuration)
-    .Enrich.FromLogContext()
-    .WriteTo.Console());
-
-// OpenAPI (D8)
-builder.Services.AddOpenApi();
-
-// gRPC
-builder.Services.AddGrpc();
-
-// Redis (JWT signing key cache + refresh tokens)
-var redisConn = builder.Configuration.GetConnectionString("Redis");
-if (!string.IsNullOrEmpty(redisConn))
-{
-    builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
-        ConnectionMultiplexer.Connect(redisConn));
-}
-
-// DbContext + Identity repositories + RLS interceptor
-builder.Services.AddSaasCheckinDbContext(builder.Configuration);
-
-// Identity bounded-context module (BCrypt + JWT signing)
-builder.Services.AddBoundedContextModule<IdentityModule>(builder.Configuration);
-
-// Registration bounded-context modules (I-301): Domain (PricingService) + Application (repos/handlers) + Infrastructure (Ed25519 QR).
-builder.Services.AddBoundedContextModule<SaasCheckin.Domain.Registration.RegistrationModule>(builder.Configuration);
-builder.Services.AddBoundedContextModule<SaasCheckin.Infrastructure.Registration.RegistrationInfrastructureModule>(builder.Configuration);
-builder.Services.AddRegistrationModule();
-
-// CheckIn bounded-context modules (I-401): Domain (CanCheckInSpecification) + Infrastructure (repo + Redis cache + Ed25519 verifier).
-builder.Services.AddBoundedContextModule<CheckInModule>(builder.Configuration);
-builder.Services.AddBoundedContextModule<CheckInInfrastructureModule>(builder.Configuration);
-
-// Billing bounded-context module (I-501): Subscription state machine + Plan limits.
-builder.Services.AddBoundedContextModule<SaasCheckin.Domain.Billing.BillingModule>(builder.Configuration);
-// AddBillingApplication: aggregate handlers already scanned via MediatR assembly registration below.
-
-// PlatformOperations bounded-context module (I-107): TOTP verifier + DI cho platform auth.
-builder.Services.AddBoundedContextModule<PlatformOperationsModule>(builder.Configuration);
-builder.Services.AddPlatformApplication();
-
-// EventManagement bounded-context module (I-201): Event + Session + Venue aggregates,
-// Application handlers (MediatR auto-discovered), gRPC stand-ins (Phase 2 wires BFF via REST).
-builder.Services.AddBoundedContextModule<SaasCheckin.Domain.EventManagement.EventManagementModule>(builder.Configuration);
-builder.Services.AddBoundedContextModule<SaasCheckin.Application.EventManagement.EventManagementApplicationModule>(builder.Configuration);
-
-// Application services (ICurrentTenant, IPermissionChecker, IIntegrationEventBus)
-builder.Services.AddSaasCheckinApplication();
-
-// MediatR — scan both Application (handlers) + Domain (domain event handlers).
-builder.Services.AddMediatR(cfg =>
-{
-    cfg.RegisterServicesFromAssemblies(
-        typeof(SaasCheckin.Domain.Identity.IdentityModule).Assembly,
-        typeof(SaasCheckin.Application.Identity.Commands.RegisterUserCommand).Assembly,
-        typeof(SaasCheckin.Application.CheckIn.Commands.ScanQrCommand).Assembly,
-        typeof(SaasCheckin.Application.Billing.Commands.SubscribeToPlanCommand).Assembly,
-        typeof(SaasCheckin.Application.PlatformOperations.Commands.LoginCommand).Assembly,
-        typeof(SaasCheckin.Application.EventManagement.Commands.CreateEventCommand).Assembly,
-        typeof(SaasCheckin.Application.Registration.Commands.CreateOrderCommand).Assembly);
-    cfg.AddOpenBehavior(typeof(PermissionBehavior<,>));
-    cfg.AddOpenBehavior(typeof(LoggingBehavior<,>));
-});
-
-// Controllers (REST endpoints — Phase 1 mirror gRPC for BFF/Playwright tests)
-builder.Services.AddControllers();
-
-// I-107: Platform admin auth filter (verify aud=checkin-admin Bearer token)
-builder.Services.AddScoped<SaasCheckin.HttpApi.Host.Middleware.PlatformAuthFilter>();
-
-// JWT bearer (for REST controllers / future SignalR) — gRPC uses metadata
-builder.Services.AddAuthentication("Bearer")
-    .AddJwtBearer();
-builder.Services.AddAuthorization();
-
-// Health checks (K8s convention)
-builder.Services.AddHealthChecks()
-    .AddNpgSql(
-        connectionStringFactory: _ => builder.Configuration.GetConnectionString("Default")!,
-        name: "postgres",
-        tags: ["ready"])
-    .AddRedis(
-        redisConnectionString: builder.Configuration.GetConnectionString("Redis")!,
-        name: "redis",
-        tags: ["ready"]);
-
-// I-603: OpenTelemetry traces → OTLP (Tempo) + Sentry error capture.
-// Both are no-op khi DSN/endpoint env không set (dev mode).
-builder.Services.AddSaasCheckinTelemetry(builder.Configuration);
-
-// I-603: Sentry.AspNetCore auto-captures unhandled exceptions + integrates with OTel.
-if (!string.IsNullOrEmpty(builder.Configuration["SENTRY_DSN"]))
-{
-    builder.WebHost.UseSentry(o =>
-    {
-        o.Dsn = builder.Configuration["SENTRY_DSN"];
-        o.Environment = builder.Environment.EnvironmentName;
-        o.TracesSampleRate = 0.1;
-        o.SendDefaultPii = false;
-    });
-}
+builder.UseSaasCheckinSerilog();
+builder.Services
+    .AddSaasCheckinPersistence(builder.Configuration)
+    .AddSaasCheckinBoundedContexts(builder.Configuration)
+    .AddSaasCheckinMediator()
+    .AddSaasCheckinApiSurface()
+    .AddSaasCheckinAuth()
+    .AddSaasCheckinHealthChecks(builder.Configuration);
+builder.AddSaasCheckinObservability();
 
 var app = builder.Build();
-
-// Scalar OpenAPI UI ở /scalar/v1
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-    app.MapScalarApiReference();
-}
-
-// Health endpoints
-app.MapHealthChecks("/health/live", new HealthCheckOptions
-{
-    Predicate = _ => false,  // chỉ check process alive
-});
-app.MapHealthChecks("/health/ready", new HealthCheckOptions
-{
-    Predicate = check => check.Tags.Contains("ready"),
-});
-// I-805: Replica health endpoint — expose lag cho Grafana scrape
-app.MapReplicaHealth();
-
-// CurrentTenantMiddleware (chạy sớm — set ICurrentTenant trước EF)
-app.UseMiddleware<SaasCheckin.HttpApi.Host.Middleware.CurrentTenantMiddleware>();
-
-// gRPC services — bind qua raw POCO BindService() (Phase stand-in). Khi buf generate chạy (I-105)
-// sẽ thay bằng generated abstract base + MapGrpcService<T>() reflection.
-app.MapGrpcService<IdentityGrpcService>();
-app.MapGrpcService<EventGrpcService>();
-app.MapGrpcService<VenueGrpcService>();
-app.MapGrpcService<RegistrationGrpcService>();
-app.MapGrpcService<CheckInGrpcService>();
-
-// REST controllers (mirror gRPC for Playwright / Swagger)
-app.MapControllers();
-
-app.MapGet("/", () => Results.Redirect("/scalar/v1"));
-
+app.UseSaasCheckinPipeline();
 app.Run();
 
 public partial class Program;

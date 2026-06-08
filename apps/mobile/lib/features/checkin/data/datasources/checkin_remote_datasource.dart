@@ -1,11 +1,10 @@
-/**
- * lib/features/checkin/data/datasources/checkin_remote_datasource.dart
- *
- * I-403 — REST client to .NET core-api /v1/checkin/{scan,manual,undo}.
- * I-801 — Thêm gRPC path qua CheckInGrpcClient khi GrpcConfig.useGrpc = true.
- *         Build: `flutter build apk --dart-define=USE_GRPC=true`.
- */
+/// I-403 — REST client to .NET core-api /v1/checkin/{scan,manual,undo}.
+/// I-801 — Thêm gRPC path qua CheckInGrpcClient khi GrpcConfig.useGrpc = true.
+///         Build: `flutter build apk --dart-define=USE_GRPC=true`.
+library;
+
 import 'package:dio/dio.dart';
+import 'package:grpc/grpc.dart';
 import '../../../../core/network/grpc/checkin_grpc_client.dart';
 import '../../../../core/network/grpc/grpc_config.dart';
 import '../../domain/entities/check_in_outcome.dart';

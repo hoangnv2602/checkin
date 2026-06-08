@@ -43,10 +43,10 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
-      - name: Setup Flutter 3.6
+      - name: Setup Flutter 3.44
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.6.0"
+          flutter-version: "3.44.0"
 
       - name: Run security audit
         run: bash tools/scripts/security-audit.sh

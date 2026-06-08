@@ -1,9 +1,11 @@
-/**
- * lib/features/organizer/domain/entities/dashboard_state.dart
- *
- * I-907 — Dashboard state cho OrganizerDashboardCubit.
- * Sealed-class (Dart 3) — exhaustive switch trong UI.
- */
+///
+/// lib/features/organizer/domain/entities/dashboard_state.dart
+/// 
+/// I-907 — Dashboard state cho OrganizerDashboardCubit.
+/// Sealed-class (Dart 3) — exhaustive switch trong UI.
+///
+library;
+
 import 'package:meta/meta.dart';
 import 'cached_event.dart';
 

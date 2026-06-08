@@ -19,6 +19,9 @@ import { OnboardingModule } from "./modules/onboarding/onboarding.module";
 import { QueueModule } from "./modules/_shared/queue/queue.module";
 import { WebhookModule } from "./modules/webhooks/webhook.module";
 import { FormBuilderModule } from "./modules/form-builder/form.module";
+import { SubOrgModule } from "./modules/sub-org/sub-org.module";
+import { RecurringModule } from "./modules/recurring/recurring.module";
+import { ImpersonationModule } from "./modules/checkin-admin/impersonation/impersonation.module";
 import { JwtAuthGuard } from "./modules/auth/guards/jwt-auth.guard";
 
 @Module({
@@ -52,6 +55,9 @@ import { JwtAuthGuard } from "./modules/auth/guards/jwt-auth.guard";
     QueueModule,        // I-806: DLQ + stuck-job detector + queue depth metrics
     WebhookModule,      // I-901: tenant outbound webhooks (CRUD + delivery queue)
     FormBuilderModule,  // I-903: custom field builder (CRUD + JSON schema export)
+    SubOrgModule,       // I-905: organization hierarchy (parent/child sub-orgs)
+    RecurringModule,    // I-904: event series + RRULE occurrence generation
+    ImpersonationModule, // I-906: platform admin impersonation sessions (checkin-admin)
   ],
   providers: [
     // Global JWT guard — opt-out via @Public() decorator

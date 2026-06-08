@@ -1,11 +1,13 @@
-/**
- * apps/mobile/test/core/network/grpc_config_test.dart
- *
- * I-801: unit test cho GrpcConfig.
- * - useGrpc flag đọc từ build-time --dart-define
- * - host default là localhost:50052
- * - TLS bật khi host không phải localhost/127.*
- */
+///
+/// apps/mobile/test/core/network/grpc_config_test.dart
+/// 
+/// I-801: unit test cho GrpcConfig.
+/// - useGrpc flag đọc từ build-time --dart-define
+/// - host default là localhost:50052
+/// - TLS bật khi host không phải localhost/127.*
+///
+library;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:saas_checkin_mobile/core/network/grpc/grpc_config.dart';
 

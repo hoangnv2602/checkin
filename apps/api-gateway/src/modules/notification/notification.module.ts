@@ -25,7 +25,7 @@ import { ChatSendProcessor } from "./jobs/chat-send.processor";
 import { ChatConfigController } from "./chat-config.controller";
 import { ChatRateLimitModule } from "./rate-limit/rate-limit.module";
 import { ChatRateLimiter } from "./rate-limit/chat-rate-limiter";
-import { MONITORED_QUEUES } from "../_shared/queue/queue.module";
+import { MONITORED_QUEUES } from "../_shared/queue/queue.tokens";
 
 @Module({
   imports: [

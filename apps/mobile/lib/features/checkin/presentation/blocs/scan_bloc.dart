@@ -1,19 +1,22 @@
-/**
- * lib/features/checkin/presentation/blocs/scan_bloc.dart
- *
- * I-403 — ScanBloc: full state machine for QR scan flow.
- *
- * Events: ScanDetected, ScanConfirmed, ScanReverted, SyncRequested
- * States: ScanIdle, ScanDetected, ScanSubmitting, ScanSuccess,
- *         ScanDuplicate, ScanRejected, ScanOfflineQueued, ScanError
- *
- * Side effects: haptic + audio (success vs reject).
- */
+///
+/// lib/features/checkin/presentation/blocs/scan_bloc.dart
+/// 
+/// I-403 — ScanBloc: full state machine for QR scan flow.
+/// 
+/// Events: ScanDetected, ScanConfirmed, ScanReverted, SyncRequested
+/// States: ScanIdle, ScanDetected, ScanSubmitting, ScanSuccess,
+///         ScanDuplicate, ScanRejected, ScanOfflineQueued, ScanError
+/// 
+/// Side effects: haptic + audio (success vs reject).
+///
+library;
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
 
+import '../../../../core/types/guid.dart';
 import '../../domain/entities/check_in_outcome.dart';
 import '../../domain/entities/scanned_ticket.dart';
 import '../../domain/repositories/checkin_repository.dart';
@@ -99,25 +102,32 @@ class ScanError extends ScanState {
 }
 
 class ScanBloc extends Bloc<ScanEvent, ScanState> {
-  final CheckInRepository _repo;
+  final CheckInRepository? _repo;
   final AudioPlayer _audio = AudioPlayer();
 
   // staff context — inject từ SessionBloc
   String gateId = '';
   String staffUserId = '';
 
-  ScanBloc(this._repo) : super(const ScanIdle()) {
+  /// Nullable repo — Phase 0 stub boots with no DI wiring (I-914 will wire
+  /// a real CheckInRepositoryImpl). When null, scan events are no-ops.
+  ScanBloc({CheckInRepository? repo}) : _repo = repo, super(const ScanIdle()) {
     on<ScanDetected>(_onDetected);
     on<ScanReset>((_, emit) => emit(const ScanIdle()));
   }
 
   Future<void> _onDetected(ScanDetected event, Emitter<ScanState> emit) async {
+    final repo = _repo;
+    if (repo == null) {
+      emit(const ScanError('Check-in repository not wired (Phase 0 stub)'));
+      return;
+    }
     emit(ScanSubmitting(event.ticket));
     try {
-      final outcome = await _repo.submitScan(
+      final outcome = await repo.submitScan(
         ticket: event.ticket,
-        gateId: _asGuid(gateId),
-        staffUserId: _asGuid(staffUserId),
+        gateId: Guid(gateId),
+        staffUserId: Guid(staffUserId),
       );
       _hapticFor(outcome);
       switch (outcome.status) {
@@ -125,7 +135,7 @@ class ScanBloc extends Bloc<ScanEvent, ScanState> {
           emit(ScanSucceeded(
             ticket: event.ticket,
             attendeeName: outcome.attendeeName ?? 'Attendee',
-          ));
+          ),);
           break;
         case CheckInStatus.duplicate:
           emit(ScanDuplicateDetected(event.ticket));
@@ -134,7 +144,7 @@ class ScanBloc extends Bloc<ScanEvent, ScanState> {
           emit(ScanRejected(
             ticket: event.ticket,
             reason: outcome.rejectReason ?? 'Rejected',
-          ));
+          ),);
           break;
       }
     } catch (e) {
@@ -158,6 +168,4 @@ class ScanBloc extends Bloc<ScanEvent, ScanState> {
         break;
     }
   }
-
-  Guid _asGuid(String value) => Guid(value);
 }

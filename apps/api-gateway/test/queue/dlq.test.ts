@@ -2,6 +2,11 @@
  * apps/api-gateway/test/queue/dlq.test.ts
  *
  * I-806 — Unit test cho DlqService với mock BullMQ Queue.
+ *
+ * NOTE: this file is jest-style (.test.ts) and is not picked up by vitest
+ * (see vitest.config.ts: include: ["src/**/*.spec.ts", "test/**/*.e2e-spec.ts"]).
+ * The real dlq tests live in src/modules/_shared/queue/dlq.service.spec.ts
+ * (vitest). Kept here for reference only — do not add new tests to this file.
  */
 import { DlqService } from "../../src/modules/_shared/queue/dlq.service";
 import { dlqName, DEFAULT_JOB_OPTIONS } from "../../src/modules/_shared/queue/queue-defaults";
@@ -18,7 +23,7 @@ const fakeDlq = {
 };
 
 const fakeSourceQueue = {
-  name: "test:queue",
+  name: "test_queue",
   opts: { connection: { host: "localhost", port: 6379 } },
   add: jest.fn(),
 };
@@ -28,8 +33,10 @@ describe("queue-defaults", () => {
     expect(DEFAULT_JOB_OPTIONS.attempts).toBe(3);
     expect(DEFAULT_JOB_OPTIONS.backoff).toEqual({ type: "exponential", delay: 1000 });
   });
-  it("dlqName append :dlx suffix", () => {
-    expect(dlqName("email:send")).toBe("email:send:dlx");
+  it("dlqName sanitizes : to _ and appends _dlx", () => {
+    // Sanitizer test: input may contain `:` even though production queue
+    // names never do (BullMQ rejects them at registration time).
+    expect(dlqName("email:send")).toBe("email_send_dlx");
   });
 });
 
@@ -64,7 +71,7 @@ describe("DlqService", () => {
         movedAt: expect.any(String),
         payload: { foo: "bar" },
       }),
-      expect.objectContaining({ jobId: expect.stringMatching(/^test:queue:job-123:\d+$/) }),
+      expect.objectContaining({ jobId: expect.stringMatching(/^test_queue:job-123:\d+$/) }),
     );
   });
 

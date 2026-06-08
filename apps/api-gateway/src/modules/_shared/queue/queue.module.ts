@@ -12,9 +12,20 @@ import { DlqService } from "./dlq.service";
 import { StuckJobDetectorProcessor } from "./stuck-job-detector.processor";
 import { QueueReplayController } from "./queue-replay.controller";
 import { ScheduleModule } from "@nestjs/schedule";
-import type { Queue } from "bullmq";
+import { Queue } from "bullmq";
+import { MONITORED_QUEUES } from "./queue.tokens";
 
-export const MONITORED_QUEUES = "MONITORED_QUEUES";
+export { MONITORED_QUEUES } from "./queue.tokens";
+
+/**
+ * Singleton array shared across all consumers of the MONITORED_QUEUES token.
+ * Feature modules push their Queue instances into this array during
+ * `onApplicationBootstrap`. Using a module-scoped binding (instead of a
+ * useFactory) ensures the array reference is stable so pushes from
+ * NotificationModule (and others) are visible to StuckJobDetectorProcessor
+ * and QueueReplayController.
+ */
+const MONITORED_QUEUES_STORE: Queue<unknown>[] = [];
 
 @Global()
 @Module({
@@ -23,10 +34,9 @@ export const MONITORED_QUEUES = "MONITORED_QUEUES";
     DlqService,
     {
       provide: MONITORED_QUEUES,
-      useFactory: (): Queue<unknown>[] => [],
+      useValue: MONITORED_QUEUES_STORE,
     },
     StuckJobDetectorProcessor,
-    QueueReplayController,
   ],
   controllers: [QueueReplayController],
   exports: [DlqService, MONITORED_QUEUES],
@@ -35,7 +45,7 @@ export class QueueModule implements OnApplicationBootstrap {
   constructor() {}
 
   onApplicationBootstrap(): void {
-    // No-op: queues self-register qua QueueModule.register() trong feature
-    // module constructor (typed for clarity).
+    // No-op: queues self-register by injecting @Inject(MONITORED_QUEUES) into
+    // their module constructor and pushing Queue instances during bootstrap.
   }
 }

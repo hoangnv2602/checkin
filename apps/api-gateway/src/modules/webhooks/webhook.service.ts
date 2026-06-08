@@ -19,7 +19,7 @@ import { Queue } from "bullmq";
 import { randomBytes } from "node:crypto";
 import { decryptSecret, encryptSecret } from "../_shared/crypto/secrets";
 import { DEFAULT_JOB_OPTIONS, queueOptions } from "../_shared/queue/queue-defaults";
-import { InMemoryWebhookStore, type IWebhookStore } from "./webhook-subscription.store";
+import { InMemoryWebhookStore } from "./webhook-subscription.store";
 import { signPayload } from "./webhook-signer";
 import {
   ALL_WEBHOOK_EVENT_TYPES,
@@ -55,7 +55,13 @@ export class WebhookService {
   private readonly logger = new Logger(WebhookService.name);
 
   constructor(
-    private readonly store: IWebhookStore,
+    // Inject the concrete InMemoryWebhookStore class (not the IWebhookStore
+    // interface) so Nest's runtime DI can resolve the token via
+    // reflect-metadata. Interfaces are erased at compile time; declaring the
+    // param as the interface would surface as `Object` to the injector and
+    // fail with UnknownDependenciesException. The interface stays in
+    // webhook-subscription.store.ts for documentation and test-mock purposes.
+    private readonly store: InMemoryWebhookStore,
     @InjectQueue(WEBHOOK_DELIVERY_QUEUE) private readonly deliveryQueue: Queue,
   ) {}
 

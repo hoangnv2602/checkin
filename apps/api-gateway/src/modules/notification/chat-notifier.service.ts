@@ -19,7 +19,9 @@ import {
   type ChatProvider,
 } from "./adapters/chat-sender.interface";
 
-export const CHAT_SEND_QUEUE = "chat:send";
+// BullMQ rejects queue names containing `:` (Redis key separator). Must
+// match `^[A-Za-z0-9_-]+$`. See test/queue/queue-names.spec.ts.
+export const CHAT_SEND_QUEUE = "chat_send";
 
 export interface ChatSendJobData {
   message: ChatMessage;

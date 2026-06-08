@@ -37,7 +37,12 @@ export class WebhookDeliveryProcessor extends WorkerHost {
   private readonly logger = new Logger(WebhookDeliveryProcessor.name);
 
   constructor(
-    private readonly store: IWebhookStore,
+    // Inject the concrete InMemoryWebhookStore class (not the IWebhookStore
+    // interface) so Nest's runtime DI can resolve the token via
+    // reflect-metadata. Interfaces are erased at compile time; declaring the
+    // param as the interface would surface as `Object` to the injector and
+    // fail with UnknownDependenciesException.
+    private readonly store: InMemoryWebhookStore,
     private readonly service: WebhookService,
   ) {
     super();

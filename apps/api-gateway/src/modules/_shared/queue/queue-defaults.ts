@@ -11,9 +11,10 @@
  * Apply: spread `defaultJobOptions` vào BullModule.registerQueue() options.
  *        Processor nào throw sẽ tự retry; quá 3 → rơi vào DLQ.
  *
- * Note: BullMQ yêu cầu queue name match `^[A-Za-z0-9_-]+$`. Source queue
- * names trong codebase hay dùng `:` (e.g. `email:send`); `dlqName()` sanitize
- * trước khi nối suffix để tránh crash khi `new Queue()`.
+ * Note: BullMQ yêu cầu queue name match `^[A-Za-z0-9_-]+$` — không được
+ * chứa `:` (Redis dùng `:` làm key separator nội bộ). Source queue names
+ * trong codebase phải dùng `_` thay cho `:` (e.g. `email_send`). DLQ names
+ * cũng phải khớp regex, nên `dlqName()` sanitize trước khi nối suffix.
  */
 import type { ConnectionOptions, DefaultJobOptions, QueueOptions } from "bullmq";
 
@@ -29,7 +30,7 @@ export const DLQ_RETENTION_SECONDS = 7 * 24 * 3600;
 
 export function queueOptions(
   name: string,
-  connection: ConnectionOptions = { host: "localhost", port: 6379 },
+  connection: ConnectionOptions = { host: "localhost", port: 6380 },
 ): QueueOptions {
   return {
     connection,

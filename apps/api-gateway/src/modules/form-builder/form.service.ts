@@ -6,7 +6,7 @@
  * (hiện tại return validated payload để BFF controller persist).
  */
 import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common";
-import { InMemoryFormTemplateStore, type IFormTemplateStore } from "./form-template.store";
+import { InMemoryFormTemplateStore } from "./form-template.store";
 import {
   schemaToJsonSchema,
   validateSubmission,
@@ -23,7 +23,13 @@ import { FORM_PLAN_QUOTAS } from "./form.types";
 export class FormService {
   private readonly logger = new Logger(FormService.name);
 
-  constructor(private readonly store: IFormTemplateStore) {}
+  // Inject the concrete class (not the IFormTemplateStore interface) so Nest's
+  // runtime DI can resolve the token via reflect-metadata. Interfaces are
+  // erased at compile time, so `private readonly store: IFormTemplateStore`
+  // would surface as `Object` to the injector and fail with
+  // UnknownDependenciesException. The interface is still useful as a contract
+  // for test mocks; we just don't put it on the wire here.
+  constructor(private readonly store: InMemoryFormTemplateStore) {}
 
   async list(tenantId: string): Promise<FormTemplate[]> {
     return this.store.listByTenant(tenantId);

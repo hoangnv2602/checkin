@@ -16,7 +16,9 @@ import { renderTemplate } from "./templates/twig-renderer";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Queue } from "bullmq";
 
-export const EMAIL_SEND_QUEUE = "email:send";
+// BullMQ rejects queue names containing `:` (Redis key separator). Must
+// match `^[A-Za-z0-9_-]+$`. See test/queue/queue-names.spec.ts.
+export const EMAIL_SEND_QUEUE = "email_send";
 
 @Injectable()
 export class EmailNotifierService implements OnModuleInit {

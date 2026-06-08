@@ -107,6 +107,9 @@ describe("DlqService", () => {
   });
 
   it("dlqName() sanitizes : to _ and appends _dlx", () => {
+    // Use arbitrary input — BullMQ rejects raw `:` in queue names so the
+    // production constant EMAIL_SEND_QUEUE is already sanitized. We're
+    // testing the sanitizer's behavior on legacy / hostile input.
     expect(dlqName("email:send")).toBe("email_send_dlx");
     expect(dlqName("chat_send")).toBe("chat_send_dlx");
   });

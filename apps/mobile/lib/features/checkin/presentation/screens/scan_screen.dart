@@ -1,19 +1,22 @@
-/**
- * lib/features/checkin/presentation/screens/scan_screen.dart
- *
- * I-403 — Staff camera scan screen. mobile_scanner package, ScanBloc state
- * machine, haptics + audio feedback on success/reject.
- *
- * Throttle detection: 800ms cooldown giữa các scan để tránh duplicate
- * (camera có thể emit 1 code nhiều lần). Idempotent: cùng JTI scan lại
- * sẽ trả 409 (handled by backend).
- */
+///
+/// lib/features/checkin/presentation/screens/scan_screen.dart
+/// 
+/// I-403 — Staff camera scan screen. mobile_scanner package, ScanBloc state
+/// machine, haptics + audio feedback on success/reject.
+/// 
+/// Throttle detection: 800ms cooldown giữa các scan để tránh duplicate
+/// (camera có thể emit 1 code nhiều lần). Idempotent: cùng JTI scan lại
+/// sẽ trả 409 (handled by backend).
+///
+library;
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/types/guid.dart';
 import '../../domain/entities/scanned_ticket.dart';
 import '../blocs/scan_bloc.dart';
 
@@ -77,7 +80,7 @@ class _ScanScreenState extends State<ScanScreen> {
             : utf8.decode(base64Decode(raw)),
       ) as Map<String, dynamic>;
       return ScannedTicket(
-        jti: Guid(decoded['jti'] as String),
+        jti: GuidJti.parse(decoded['jti'] as String),
         registrationId: Guid(decoded['rid'] as String),
         eventId: Guid(decoded['eid'] as String),
         organizationId: Guid(decoded['oid'] as String),
@@ -114,8 +117,11 @@ class _ScanScreenState extends State<ScanScreen> {
               color: Colors.green,
               title: 'Welcome ${state.attendeeName}',
             );
+            // Capture the bloc before the async gap; this is safe because the
+            // widget tree (BlocProvider) outlives the 2-second snackbar.
+            final bloc = context.read<ScanBloc>();
             Future.delayed(const Duration(seconds: 2), () {
-              if (mounted) context.read<ScanBloc>().add(const ScanReset());
+              if (mounted) bloc.add(const ScanReset());
             });
           } else if (state is ScanDuplicateDetected) {
             _showFeedback(

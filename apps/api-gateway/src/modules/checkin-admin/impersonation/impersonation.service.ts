@@ -10,7 +10,7 @@
  *  - 15 min default
  */
 import { BadRequestException, ForbiddenException, Injectable, Logger, NotFoundException } from "@nestjs/common";
-import { InMemoryImpersonationStore, type IImpersonationStore } from "./impersonation.store";
+import { InMemoryImpersonationStore } from "./impersonation.store";
 import {
   IMPERSONATION_DEFAULT_DURATION_MINUTES,
   IMPERSONATION_MAX_DURATION_MINUTES,
@@ -25,7 +25,14 @@ import {
 export class ImpersonationService {
   private readonly logger = new Logger(ImpersonationService.name);
 
-  constructor(private readonly store: IImpersonationStore) {}
+  // Inject the concrete InMemoryImpersonationStore class (not the
+  // IImpersonationStore interface) so Nest's runtime DI can resolve the
+  // token via reflect-metadata. Interfaces are erased at compile time, so
+  // declaring `private readonly store: IImpersonationStore` would surface
+  // as `Object` to the injector and fail with UnknownDependenciesException.
+  // The interface stays in impersonation.store.ts for documentation and
+  // test-mock purposes; the concrete class is what's actually on the wire.
+  constructor(private readonly store: InMemoryImpersonationStore) {}
 
   /**
    * Start a new impersonation session.

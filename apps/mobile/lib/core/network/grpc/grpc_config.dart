@@ -1,9 +1,11 @@
-/**
- * lib/core/network/grpc/grpc_config.dart
- *
- * I-801: gRPC channel config + feature flag cho mobile.
- * Build-time: `flutter build apk --dart-define=USE_GRPC=true --dart-define=GRPC_HOST=api.saas-checkin.com:50052`
- */
+///
+/// lib/core/network/grpc/grpc_config.dart
+/// 
+/// I-801: gRPC channel config + feature flag cho mobile.
+/// Build-time: `flutter build apk --dart-define=USE_GRPC=true --dart-define=GRPC_HOST=api.saas-checkin.com:50052`
+///
+library;
+
 import 'package:grpc/grpc.dart';
 
 class GrpcConfig {

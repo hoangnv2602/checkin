@@ -10,7 +10,9 @@ import { Job } from "bullmq";
 import { StripeAdapter } from "../adapters/stripe.adapter";
 import { VnpayAdapter } from "../adapters/vnpay.adapter";
 
-export const PAYMENT_SWEEP_QUEUE = "payment:sweep";
+// BullMQ rejects queue names containing `:` (Redis key separator). Must
+// match `^[A-Za-z0-9_-]+$`. See test/queue/queue-names.spec.ts.
+export const PAYMENT_SWEEP_QUEUE = "payment_sweep";
 
 const CORE_API_BASE = process.env.CORE_API_BASE ?? "http://localhost:5050";
 
