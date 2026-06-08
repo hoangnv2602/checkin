@@ -5,6 +5,7 @@ using SaasCheckin.Domain.Identity.Authorization;
 using SaasCheckin.Domain.Identity.Repositories;
 using SaasCheckin.Domain.Identity.Services;
 using SaasCheckin.Domain.Identity.ValueObjects;
+using SaasCheckin.Shared.Application.Tenancy;
 using SaasCheckin.Shared.Domain.Core;
 using SaasCheckin.Utility;
 
@@ -17,19 +18,22 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
     private readonly IPasswordHasher _hasher;
     private readonly IJwtTokenService _jwt;
     private readonly IClock _clock;
+    private readonly ICurrentTenant _currentTenant;
 
     public LoginCommandHandler(
         IUserRepository users,
         IMembershipRepository memberships,
         IPasswordHasher hasher,
         IJwtTokenService jwt,
-        IClock clock)
+        IClock clock,
+        ICurrentTenant currentTenant)
     {
         _users = users;
         _memberships = memberships;
         _hasher = hasher;
         _jwt = jwt;
         _clock = clock;
+        _currentTenant = currentTenant;
     }
 
     public async Task<LoginResponse> Handle(LoginCommand cmd, CancellationToken ct)
@@ -51,6 +55,13 @@ public sealed class LoginCommandHandler : IRequestHandler<LoginCommand, LoginRes
 
         user.RecordSuccessfulLogin(_clock);
         await _users.UpdateAsync(user, ct);
+
+        // Set user context trước khi đọc memberships — RLS policy
+        // memberships_self_read cho phép user đọc memberships của chính
+        // mình khi chưa có tenant context (login flow). TenantId vẫn null
+        // ở bước này, nên memberships_tenant_isolation vẫn fail — chỉ
+        // self-read policy mới match.
+        _currentTenant.SetUser(user.Id.Value);
 
         // Resolve active memberships → permissions
         var memberships = await _memberships.ListActiveByUserAsync(user.Id, ct);
