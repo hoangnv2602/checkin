@@ -10,7 +10,7 @@
  *  - POST /v1/platform/mfa/verify
  *  - GET  /v1/platform/me
  */
-import { Injectable, Logger, ServiceUnavailableException, UnauthorizedException } from "@nestjs/common";
+import { HttpException, Injectable, Logger, ServiceUnavailableException, UnauthorizedException } from "@nestjs/common";
 
 const CORE_API_BASE = process.env.CORE_API_BASE ?? "http://localhost:5050";
 
@@ -56,6 +56,11 @@ async function postJson<T>(path: string, body: unknown, headers: Record<string, 
   if (!res.ok) {
     const text = await res.text();
     if (res.status === 401) throw new UnauthorizedException(text || "Unauthorized");
+    // core-api returns 423 Locked khi platform user bị khóa do quá nhiều lần
+    // đăng nhập sai (I-107). Forward nguyên trạng thái về BFF client thay vì
+    // nuốt thành 500 — UX: client thấy "tài khoản bị tạm khóa" thay vì
+    // "Internal server error".
+    if (res.status === 423) throw new HttpException(text || "Locked", 423);
     if (res.status === 404) {
       throw new ServiceUnavailableException(
         `core-api endpoint ${path} not implemented (Phase 2 PlatformOperations)`,
