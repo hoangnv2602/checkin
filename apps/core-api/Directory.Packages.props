@@ -16,7 +16,7 @@
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
 
     <!-- MediatR -->
-    <PackageVersion Include="MediatR" Version="12.4.1" />
+    <PackageVersion Include="MediatR" Version="14.1.0" />
 
     <!-- MassTransit (in-process + RabbitMQ/Redis) -->
     <PackageVersion Include="MassTransit" Version="8.4.0" />
